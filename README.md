@@ -1,32 +1,17 @@
 # aoc2020
 
-FIXME: description
+Advent of Code 2020, in Clojure. Probably not with good coding style, because I
+am a Clojure newbie, but it works...
 
-## Installation
+For details see the advent of code webpage:
 
-Download from http://example.com/FIXME.
+https://adventofcode.com/2020
 
 ## Usage
 
-FIXME: explanation
+Either do `lein run` or compile with `lein jar` and run:
 
     $ java -jar aoc2020-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
 
 ## License
 
