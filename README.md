@@ -9,9 +9,9 @@ https://adventofcode.com/2020
 
 ## Usage
 
-Either do `lein run` or compile with `lein jar` and run:
+Either do `lein run` or compile with `lein uberjar` and run:
 
-    $ java -jar aoc2020-0.1.0-standalone.jar [args]
+    $ java -jar target/uberjar/aoc2020-0.1.0-SNAPSHOT-standalone.jar
 
 ## License
 
