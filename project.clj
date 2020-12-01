@@ -8,4 +8,6 @@
   :main ^:skip-aot aoc2020.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
-                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
+                       :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}
+  :plugins [[cider/cider-nrepl "0.25.5"]]
+  )

@@ -45,7 +45,6 @@
   (calc-product 3 input)
   )
 
-
 (defn -main
   "Advent of Code 2020."
   [& args]
