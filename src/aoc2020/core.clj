@@ -1,6 +1,8 @@
 (ns aoc2020.core
   (:gen-class))
 
+(use 'clojure.math.combinatorics)
+
 (defn read-input
   [input-file]
   (let [input (slurp input-file)]
@@ -14,61 +16,36 @@
   )
 
 ;; day 1
-(defn find-two-2020
-  "finds two integers that sum to 2020 from a list"
-  [input]
-  (flatten
-   (for [n (range (count input))
-         :let [x (nth input n)
-               xs (nthrest input n)
-               result (for [y xs
-                            :when (= 2020 (+ x y))]
-                        [x y])
-               ]
-         :when (> (count result) 0)
-         ]
-     result
-     )
-   )
+(defn is2020?
+  "true if sum is 2020"
+  [xs]
+  (= 2020 (reduce + xs))
   )
 
 (defn calc-two-product
   "Finds two integers which add to 2020 and calculates their product"
   [input]
-  (reduce * (find-two-2020 input))
-  )
-
-(defn find-three-2020
-  "finds three integers that sum to 2020 from a list"
-  [input]
-  (flatten
-   (for [k (range (count input))
-         :let [z (nth input k)
-               zs (nthrest input k)
-               result2 (for [n (range (count zs))
-                             :let [x (nth zs n)
-                                   xs (nthrest zs n)
-                                   result (for [y xs
-                                                :when (= 2020 (+ x y z))]
-                                            [x y z])
-                                   ]
-                             :when (> (count result) 0)
-                             ]
-                         result
-                         )
-               ]
-         :when (> (count result2) 0)
-         ]
-     result2
-     )
+  (->> 
+   (combinations input 2)
+   (map vec)
+   (filter is2020?)
+   flatten
+   (reduce *)
    )
   )
 
 (defn calc-three-product
-  "Finds three integers which add to 2020 and calculates their product"
+  "Finds two integers which add to 2020 and calculates their product"
   [input]
-  (reduce * (find-three-2020 input))
+  (->> 
+   (combinations input 3)
+   (map vec)
+   (filter is2020?)
+   flatten
+   (reduce *)
+   )
   )
+
 
 (defn -main
   "Advent of Code 2020."
