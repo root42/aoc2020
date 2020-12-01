@@ -22,28 +22,27 @@
   (= 2020 (reduce + xs))
   )
 
-(defn calc-two-product
-  "Finds two integers which add to 2020 and calculates their product"
-  [input]
+(defn calc-product
+  "Finds N integers which add to 2020 and calculates their product"
+  [n input]
   (->> 
-   (combinations input 2)
-   (map vec)
+   (combinations input n)
    (filter is2020?)
    flatten
    (reduce *)
    )
   )
 
-(defn calc-three-product
+(defn calc-two-product
   "Finds two integers which add to 2020 and calculates their product"
   [input]
-  (->> 
-   (combinations input 3)
-   (map vec)
-   (filter is2020?)
-   flatten
-   (reduce *)
-   )
+  (calc-product 2 input)
+  )
+
+(defn calc-three-product
+  "Finds three integers which add to 2020 and calculates their product"
+  [input]
+  (calc-product 3 input)
   )
 
 
