@@ -65,25 +65,31 @@
     )
   )
 
-(defn test-valid-password
+(defn is-valid-password?
   "A valid password P has minimum X and maximum Y occurences of char C"
   [x y c p]
   (let [countc (count (filter #(= c %) p))]
     (and (>= y countc) (<= x countc))
     )
-)
+  )
 
-(defn is-valid-password?
-  "Returns true if the password is valid"
-  [input]
-  (apply test-valid-password input)
+(defn is-toboggan-password?
+  "A valid password P has char C either at position X or Y"
+  [x y c p]
+  (let [a (= c (nth p (dec x)))
+        b (= c (nth p (dec y)))]
+    (or ; clojure has no xor
+     (and (= a true) (= b false))
+     (and (= b true) (= a false))
+     )
+    )
   )
 
 (defn count-valid-passwords
   "Counts the number of valid passwords in the input"
-  [input]
+  [input policy]
   (->> input
-       (filter is-valid-password?)
+       (filter #(apply policy %))
        (count)
        )
   )
@@ -96,6 +102,7 @@
     (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
     )
   (let [input (read-password-input "resources/input_2.txt")]
-    (println "2.1 Number of valid passwords: " (count-valid-passwords input))
+    (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
+    (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
     )
   )
