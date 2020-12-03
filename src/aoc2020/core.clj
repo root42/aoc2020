@@ -104,22 +104,19 @@
 (defn count-trees
   "Counts the number of trees the toboggan hits on its way down the given trajectory"
   [input [dx dy]]
-  (loop [x 0
-         y 0
-         trees 0
-         sx (count (first input))
-         sy (count input)
-         ]
-    (if (>= y sy)
-      trees
-      (let [line (nth input y)
-            tree (nth line x)
-            ]
-        (recur (mod (+ x dx) sx)
-               (+ y dy)
-               (if (= tree \#) (inc trees) trees)
-               sx
-               sy)
+  (let [sx (count (first input))
+        sy (count input)]
+    (loop [x 0
+           y 0
+           trees 0]
+      (if (>= y sy)
+        trees
+        (let [line (nth input y)
+              tree (nth line x)]
+          (recur (mod (+ x dx) sx)
+                 (+ y dy)
+                 (if (= tree \#) (inc trees) trees))
+          )
         )
       )
     )
