@@ -103,7 +103,7 @@
 
 (defn count-trees
   "Counts the number of trees the toboggan hits on its way down the given trajectory"
-  [input dx dy]
+  [input [dx dy]]
   (loop [x 0
          y 0
          trees 0
@@ -127,31 +127,23 @@
 
 (defn product-count-trees
   "multiplies the number of trees for multiple slopes"
-  [input]
-  (reduce *
-          (vector 
-           (count-trees input 1 1)
-           (count-trees input 3 1)
-           (count-trees input 5 1)
-           (count-trees input 7 1)
-           (count-trees input 1 2)
-           )
-          )
+  [input params]
+  (reduce * (map #(count-trees input %) params))
   )
 
 (defn -main
   "Advent of Code 2020."
   [& args]
-  ;; (let [input (read-input "resources/input_1.txt")]
-  ;;   (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
-  ;;   (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
-  ;;   )
-  ;; (let [input (read-password-input "resources/input_2.txt")]
-  ;;   (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
-  ;;   (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
-  ;;   )
+  (let [input (read-input "resources/input_1.txt")]
+    (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
+    (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
+    )
+  (let [input (read-password-input "resources/input_2.txt")]
+    (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
+    (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
+    )
   (let [input (read-text-input "resources/input_3.txt")]
-    (println "3.1 Toboggan trajectory, number of trees: " (count-trees input 3 1))
-    (println "3.2 Toboggan trajectory, product: " (product-count-trees input))
+    (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
+    (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
     )
   )
