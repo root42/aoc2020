@@ -110,7 +110,7 @@
          sx (count (first input))
          sy (count input)
          ]
-    (if (>= y (count input))
+    (if (>= y sy)
       trees
       (let [line (nth input y)
             tree (nth line x)
