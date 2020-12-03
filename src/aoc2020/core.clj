@@ -125,6 +125,20 @@
     )
   )
 
+(defn product-count-trees
+  "multiplies the number of trees for multiple slopes"
+  [input]
+  (reduce *
+          (vector 
+           (count-trees input 1 1)
+           (count-trees input 3 1)
+           (count-trees input 5 1)
+           (count-trees input 7 1)
+           (count-trees input 1 2)
+           )
+          )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -138,5 +152,6 @@
   ;;   )
   (let [input (read-text-input "resources/input_3.txt")]
     (println "3.1 Toboggan trajectory, number of trees: " (count-trees input 3 1))
+    (println "3.2 Toboggan trajectory, product: " (product-count-trees input))
     )
   )
