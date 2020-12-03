@@ -94,15 +94,49 @@
        )
   )
 
+;; day 3
+(defn read-text-input
+  [input-file]
+  (let [input (slurp input-file)]
+    (clojure.string/split-lines input)) 
+  )
+
+(defn count-trees
+  "Counts the number of trees the toboggan hits on its way down the given trajectory"
+  [input dx dy]
+  (loop [x 0
+         y 0
+         trees 0
+         sx (count (first input))
+         sy (count input)
+         ]
+    (if (>= y (count input))
+      trees
+      (let [line (nth input y)
+            tree (nth line x)
+            ]
+        (recur (mod (+ x dx) sx)
+               (+ y dy)
+               (if (= tree \#) (inc trees) trees)
+               sx
+               sy)
+        )
+      )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
-  (let [input (read-input "resources/input_1.txt")]
-    (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
-    (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
-    )
-  (let [input (read-password-input "resources/input_2.txt")]
-    (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
-    (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
+  ;; (let [input (read-input "resources/input_1.txt")]
+  ;;   (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
+  ;;   (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
+  ;;   )
+  ;; (let [input (read-password-input "resources/input_2.txt")]
+  ;;   (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
+  ;;   (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
+  ;;   )
+  (let [input (read-text-input "resources/input_3.txt")]
+    (println "3.1 Toboggan trajectory, number of trees: " (count-trees input 3 1))
     )
   )
