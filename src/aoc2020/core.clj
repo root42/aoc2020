@@ -148,10 +148,49 @@
     )
   )
 
+(defn ranges-valid?
+  [passport]
+  (let [ecls ["amb" "blu" "brn" "gry" "grn" "hzl" "oth"]
+        byr (Integer. (passport "byr"))
+        iyr (Integer. (passport "iyr"))
+        eyr (Integer. (passport "eyr"))
+        hgt (passport "hgt")
+        hcl (passport "hcl")
+        ecl (passport "ecl")
+        pid (passport "pid")
+        ]
+    (and (and (<= 1920 byr) (>= 2002 byr))
+         (and (<= 2010 iyr) (>= 2020 iyr))
+         (and (<= 2020 eyr) (>= 2030 eyr))
+         (re-matches #"#[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]" hcl)
+         (let [hgts (re-matches #"(.*)(cm|in)" hgt)]
+           (if hgts
+             (let [height (Integer. (nth hgts 1))
+                   unit (last hgts)]
+               (case unit
+                 "cm" (and (<= 150 height) (>= 193 height))
+                 "in" (and (<= 59 height) (>= 76 height))
+                 )
+               )
+             )
+           )
+         (some #{ecl} ecls)
+         (re-matches #"[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" pid)
+         )
+    )
+  )
+
+(defn is-valid-passport-ranges?
+  "is a valid passport if all mandatory fields are contained and "
+  [passport]
+  (and (is-valid-passport? passport)
+       (ranges-valid? passport))
+  )
+
 (defn count-valid-passports
   "counts the valid passports"
-  [input]
-  (count (filter is-valid-passport? input))
+  [input policy]
+  (count (filter policy input))
   )
 
 (defn -main
@@ -170,6 +209,7 @@
     (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
     )
   (let [input (read-passport-input "resources/input_4.txt")]
-    (println "3.1 Number of valid passports: " (count-valid-passports input))
+    (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
+    (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
     )
   )
