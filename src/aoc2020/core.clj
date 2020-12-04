@@ -6,13 +6,13 @@
 (defn read-input
   [input-file]
   (let [input (slurp input-file)]
-    (map #(Integer. %) (clojure.string/split-lines input))) 
+    (map #(Integer. %) (clojure.string/split-lines input)))
   )
 
 (defn read-input-csv
   [input-file]
   (let [input (slurp input-file)]
-    (map #(Integer. %) (re-seq #"[^,\n]+" input))) 
+    (map #(Integer. %) (re-seq #"[^,\n]+" input)))
   )
 
 ;; day 1
@@ -25,7 +25,7 @@
 (defn calc-product
   "Finds N integers which add to 2020 and calculates their product"
   [n input]
-  (->> 
+  (->>
    (combinations input n)
    (filter is2020?)
    flatten
@@ -98,7 +98,7 @@
 (defn read-text-input
   [input-file]
   (let [input (slurp input-file)]
-    (clojure.string/split-lines input)) 
+    (clojure.string/split-lines input))
   )
 
 (defn count-trees
@@ -128,19 +128,48 @@
   (reduce * (map #(count-trees input %) params))
   )
 
+;; day 4
+(defn read-passport-input
+  [input-file]
+  (let [input (slurp input-file)
+        passports (clojure.string/split input #"\n\n")]
+    (->>
+     (map #(clojure.string/split % #"[\n: ]") passports)
+     (map #(apply hash-map %))
+     )
+    )
+  )
+
+(defn is-valid-passport?
+  "is a valid passport if all mandatory fields are contained"
+  [passport]
+  (let [mandatory ["byr" "iyr" "eyr" "hgt" "hcl" "ecl" "pid"]]
+    (= (count (filter #(contains? passport %) mandatory)) (count mandatory))
+    )
+  )
+
+(defn count-valid-passports
+  "counts the valid passports"
+  [input]
+  (count (filter is-valid-passport? input))
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
-  (let [input (read-input "resources/input_1.txt")]
-    (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
-    (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
-    )
-  (let [input (read-password-input "resources/input_2.txt")]
-    (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
-    (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
-    )
-  (let [input (read-text-input "resources/input_3.txt")]
-    (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
-    (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
+  ;; (let [input (read-input "resources/input_1.txt")]
+  ;;   (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
+  ;;   (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
+  ;;   )
+  ;; (let [input (read-password-input "resources/input_2.txt")]
+  ;;   (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
+  ;;   (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
+  ;;   )
+  ;; (let [input (read-text-input "resources/input_3.txt")]
+  ;;   (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
+  ;;   (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
+  ;;   )
+  (let [input (read-passport-input "resources/input_4.txt")]
+    (println "3.1 Number of valid passports: " (count-valid-passports input))
     )
   )
