@@ -238,6 +238,31 @@
    )
   )
 
+(defn find-gap
+  "finds a gap in a linear, sorted sequence of integers"
+  [input]
+  (loop [i input]
+    (let [a (nth i 0)
+          b (nth i 1)
+          c (nth i 2)]
+      (if (and (= (inc a) b) (= (inc b) c)) 
+        (recur (drop 1 i)) ;; else continue search
+        (inc b) ;; found our seat as b+1
+        )
+      )
+    )
+  )
+
+(defn my-seat-id
+  "returns my seat ID, which is the only one missing, except for first and last row"
+  [input]
+  (->> input
+       (map calculate-seat-id)
+       (sort)
+       (find-gap)
+       )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -259,5 +284,6 @@
     )
   (let [input (read-text-input "resources/input_5.txt")]
     (println "5.1 Highest seat ID: " (highest-seat-id input))
+    (println "5.2 My seat ID: " (my-seat-id input))
     )
   )
