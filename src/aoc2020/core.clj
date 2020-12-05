@@ -243,11 +243,10 @@
   [input]
   (loop [i input]
     (let [a (nth i 0)
-          b (nth i 1)
-          c (nth i 2)]
-      (if (and (= (inc a) b) (= (inc b) c)) 
+          b (nth i 1)]
+      (if (= (inc a) b) 
         (recur (drop 1 i)) ;; else continue search
-        (inc b) ;; found our seat as b+1
+        (inc a) ;; found our seat as a+1
         )
       )
     )
