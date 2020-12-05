@@ -193,6 +193,51 @@
   (count (filter policy input))
   )
 
+;; day 5
+(defn bisect
+  "bisects the range [start,end) using hi and lo as symbols and data being a string of hi and lo symbols"
+  [start end hi lo data]
+  (loop [d data
+         s start
+         e end]
+    (if (= (count d) 0)
+      s ; if d is empty, return result
+      (if (= (first d) lo)
+        (recur (drop 1 d) s (+ s (/ (- e s) 2))) ; lower half
+        (recur (drop 1 d) (+ s (/ (- e s) 2)) e) ; upper half
+        )
+      )
+    )
+  )
+
+(defn calculate-seat-coordinate
+  "calculates the seat coordinate according to the bisection of the pass string"
+  [pass]
+  (let [bp (split-at 7 pass)
+        row (first bp)
+        col (second bp)]
+    {:row (bisect 0 128 \B \F row), :col (bisect 0 8 \R \L col)}
+    )
+  )
+
+(defn calculate-seat-id
+  "for a given boarding pass calculates the seat ID"
+  [pass]
+  (let [coord (calculate-seat-coordinate pass)]
+    (+ (* (:row coord) 8) (:col coord))
+    )
+  )
+
+(defn highest-seat-id
+  "returns the highest seat ID encountered in given input"
+  [input]
+  (->> input
+       (map calculate-seat-id)
+       (sort)
+       (last)
+   )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -211,5 +256,8 @@
   (let [input (read-passport-input "resources/input_4.txt")]
     (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
     (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
+    )
+  (let [input (read-text-input "resources/input_5.txt")]
+    (println "5.1 Highest seat ID: " (highest-seat-id input))
     )
   )
