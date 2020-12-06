@@ -262,6 +262,27 @@
        )
   )
 
+;; day 6
+(defn read-text-block-input
+  "reads in blocks of text that is separated by two newlines"
+  [input-file]
+  (let [input (slurp input-file)
+        group-input (clojure.string/split input #"\n\n")
+        ]
+    (map #(clojure.string/replace % #"\n" "" ) group-input)
+    )
+  )
+
+(defn sum-of-group-answers
+  "calculates the sum of all distinct answers of each group"
+  [input]
+  (->> input
+       (map set)
+       (map count)
+       (reduce +)
+       )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -284,5 +305,8 @@
   (let [input (read-text-input "resources/input_5.txt")]
     (println "5.1 Highest seat ID: " (highest-seat-id input))
     (println "5.2 My seat ID: " (my-seat-id input))
+    )
+  (let [input (read-text-block-input "resources/input_6.txt")]
+    (println "6.1 Sum of groups answers: " (sum-of-group-answers input))
     )
   )
