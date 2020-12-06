@@ -2,6 +2,7 @@
   (:gen-class))
 
 (use 'clojure.math.combinatorics)
+(use 'clojure.set)
 
 (defn read-input
   [input-file]
