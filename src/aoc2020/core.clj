@@ -244,7 +244,7 @@
   (loop [i input]
     (let [a (nth i 0)
           b (nth i 1)]
-      (if (= (inc a) b) 
+      (if (= (inc a) b)
         (recur (drop 1 i)) ;; else continue search
         (inc a) ;; found our seat as a+1
         )
@@ -266,18 +266,29 @@
 (defn read-text-block-input
   "reads in blocks of text that is separated by two newlines"
   [input-file]
-  (let [input (slurp input-file)
-        group-input (clojure.string/split input #"\n\n")
-        ]
-    (map #(clojure.string/replace % #"\n" "" ) group-input)
+  (let [input (slurp input-file)]
+    (clojure.string/split input #"\n\n")
     )
   )
 
-(defn sum-of-group-answers
-  "calculates the sum of all distinct answers of each group"
+(defn sum-of-anyone-answers
+  "calculates the sum of all answers where anyone of each group answered"
   [input]
   (->> input
+       (map #(clojure.string/replace % #"\n" "" ))
        (map set)
+       (map count)
+       (reduce +)
+       )
+  )
+
+(defn sum-of-everyone-answers
+  "calculates the sum of all answers where everyone of each group answered"
+  [input]
+  (->> input
+       (map clojure.string/split-lines)
+       (map #(map set %))
+       (map #(apply clojure.set/intersection %))
        (map count)
        (reduce +)
        )
@@ -307,6 +318,7 @@
     (println "5.2 My seat ID: " (my-seat-id input))
     )
   (let [input (read-text-block-input "resources/input_6.txt")]
-    (println "6.1 Sum of groups answers: " (sum-of-group-answers input))
+    (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
+    (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
     )
   )
