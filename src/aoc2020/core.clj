@@ -341,16 +341,14 @@
 (defn count-bag-contents
   "recursive part of couting, uses 1 as the accumulator, otherwise we forget to count the current bag"
   [rules bag a]
-  (let [b (get rules bag)]
-    (if (empty? b)
-      1
-      (reduce
-       (fn [acc [color n]]
-         (+ acc (* n (count-bag-contents rules color 1)))
-         )
-       a
-       b)
-      )
+  (let [b (get rules bag 1)]
+    (reduce
+     (fn [acc [color n]]
+       (+ acc (* n (count-bag-contents rules color 1)))
+       )
+     a
+     b)
+      
     )
   )
 
