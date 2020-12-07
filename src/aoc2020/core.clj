@@ -320,13 +320,10 @@
   )
 
 (defn bag-contains
-  [rule contained rules]
-  (let [bag (first rule)
-        container (second rule)]
-    (if (contains? container contained)
-      true
-      (some #(bag-contains [(first %) (get rules (first %))] contained rules) container)
-      )
+  [[bag container] contained rules]
+  (if (contains? container contained)
+    true
+    (some #(bag-contains [(first %) (get rules (first %))] contained rules) container)
     )
   )
 
