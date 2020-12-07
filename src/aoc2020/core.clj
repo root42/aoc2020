@@ -1,5 +1,6 @@
 (ns aoc2020.core
-  (:gen-class))
+  (:gen-class)
+  (:require [instaparse.core :as insta]))
 
 (use 'clojure.math.combinatorics)
 (use 'clojure.set)
@@ -295,6 +296,48 @@
        )
   )
 
+;; day 7
+(defn rule-string
+  "creates an EBNF grammar string from the input"
+  [input]
+  (-> input
+      (clojure.string/replace #"([a-z]+) ([a-z]+) bags contain no other bags." "$1_$2=\"$1_$2\"")
+      (clojure.string/replace #"bag[s]?[ .,]" "")
+      (clojure.string/replace #"([a-z]+) ([a-z]+) contain " "$1_$2=\"$1_$2\"|")
+      (clojure.string/replace #"([a-z]+) ([a-z]+)" "$1_$2")
+      (clojure.string/replace #"[0-9]+" "")
+      (clojure.string/replace #"  " "|")
+      )
+  )
+
+(defn get-start-symbols
+  [rules]
+  (->> rules
+       clojure.string/split-lines
+       (map #(clojure.string/split % #"="))
+       (map #(take 1 %))
+       flatten
+       (map keyword)
+       )
+  )
+
+(defn bags-that-contain
+  "returns the number of different bags that can containe a given bag"
+  [mybag input]
+  (let [rules (rule-string input)
+        parser (insta/parser rules)
+        start-symbols (get-start-symbols rules)]
+    (->> start-symbols
+         (map #(parser mybag :start %))
+         (filter #(not (insta/failure? %)))
+         flatten
+         (filter #(and (not= % (keyword mybag)) (not= % mybag)))
+         set
+         count
+         )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -321,5 +364,8 @@
   (let [input (read-text-block-input "resources/input_6.txt")]
     (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
     (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
+    )
+  (let [input (slurp "resources/input_7.txt")]
+    (println "7.1 Bags that can contain shiny gold bag: " (bags-that-contain "shiny_gold" input))
     )
   )
