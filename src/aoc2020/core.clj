@@ -367,30 +367,30 @@
 (defn -main
   "Advent of Code 2020."
   [& args]
-  ;; (let [input (read-input "resources/input_1.txt")]
-  ;;   (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
-  ;;   (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
-  ;;   )
-  ;; (let [input (read-password-input "resources/input_2.txt")]
-  ;;   (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
-  ;;   (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
-  ;;   )
-  ;; (let [input (read-text-input "resources/input_3.txt")]
-  ;;   (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
-  ;;   (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
-  ;;   )
-  ;; (let [input (read-passport-input "resources/input_4.txt")]
-  ;;   (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
-  ;;   (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
-  ;;   )
-  ;; (let [input (read-text-input "resources/input_5.txt")]
-  ;;   (println "5.1 Highest seat ID: " (highest-seat-id input))
-  ;;   (println "5.2 My seat ID: " (my-seat-id input))
-  ;;   )
-  ;; (let [input (read-text-block-input "resources/input_6.txt")]
-  ;;   (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
-  ;;   (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
-  ;;   )
+  (let [input (read-input "resources/input_1.txt")]
+    (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
+    (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
+    )
+  (let [input (read-password-input "resources/input_2.txt")]
+    (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
+    (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
+    )
+  (let [input (read-text-input "resources/input_3.txt")]
+    (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
+    (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
+    )
+  (let [input (read-passport-input "resources/input_4.txt")]
+    (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
+    (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
+    )
+  (let [input (read-text-input "resources/input_5.txt")]
+    (println "5.1 Highest seat ID: " (highest-seat-id input))
+    (println "5.2 My seat ID: " (my-seat-id input))
+    )
+  (let [input (read-text-block-input "resources/input_6.txt")]
+    (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
+    (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
+    )
   (let [input (slurp "resources/input_7.txt")]
     (println "7.1 Bags that can contain shiny gold bag: " (count-bags-that-contain input "shiny gold"))
     (println "7.2 Contents of shiny gold bag: " (contents-of-bag input "shiny gold"))
