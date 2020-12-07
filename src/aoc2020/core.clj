@@ -237,7 +237,7 @@
        (map calculate-seat-id)
        (sort)
        (last)
-   )
+       )
   )
 
 (defn find-gap
@@ -300,7 +300,7 @@
 (defn parse-bag-contents
   [line]
   (let [[_ color contained] (re-matches #"([a-z\ ]+) bags contain (.+)" line)]
-    [color 
+    [color
      (->> contained
           (re-seq #"(\d+) ([a-z\ ]+) bag")
           (map (fn [[_ n color]] [color (Integer/parseInt n)]))
@@ -328,7 +328,8 @@
   )
 
 (defn count-bags-that-contain
- [input bag]
+  "counts the number of bags that contain directly or indirectly a given bag"
+  [input bag]
   (let [rules (create-rule-map input)]
     (->> rules
          (filter #(bag-contains % bag rules))
@@ -338,6 +339,7 @@
   )
 
 (defn count-bag-contents
+  "recursive part of couting, uses 1 as the accumulator, otherwise we forget to count the current bag"
   [rules bag a]
   (let [b (get rules bag)]
     (if (empty? b)
@@ -353,15 +355,17 @@
   )
 
 (defn count-bag
+  "kicks off the actual counting, initializing the accumulator to 0"
   [rules bag]
   (count-bag-contents rules bag 0)
   )
 
 (defn contents-of-bag
+  "counts the contents of a given bag"
   [input bag]
   (let [rules (create-rule-map input)]
     (count-bag rules bag)
-    )  
+    )
   )
 
 (defn -main
