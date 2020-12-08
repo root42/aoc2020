@@ -368,6 +368,8 @@
 
 ;; day 8
 (defn does-halt?
+  "Returns a tuple [b acc] where b is true or fals depending on if the program halts and acc is the value of the
+  accumulator."
   [program]
   (loop [pc 0
          acc 0
@@ -392,6 +394,7 @@
   )
 
 (defn decode-program
+  "Decodes a given string into a list of program instructions [opcode arg]."
   [input]
   (let [lines (clojure.string/split-lines input)
         instructions (map #(clojure.string/split % #" ") lines)
@@ -400,7 +403,29 @@
     )
   )
 
+(defn fix-program
+  "Repairs a program by changing exactly one jmp to nop or the other way around."
+  [program]
+  (loop [pc 0]
+    (let [instruction (nth program pc)
+          opcode (first instruction)
+          arg (second instruction)
+          halted (case opcode
+                   "nop" (does-halt? (assoc program pc ["jmp" arg]))
+                   "jmp" (does-halt? (assoc program pc ["nop" arg]))
+                   "acc" [false 0]
+                   )
+          ]
+      (if (first halted)
+        (second halted)
+        (recur (inc pc))
+        )
+      )
+    )
+  )
+
 (defn detect-infinite-loop
+  "Will detect an infinite loop and return the value of acc before the loop."
   [input]
   (->> input
        decode-program
@@ -409,8 +434,14 @@
        )
   )
 
-(defn fix-program
+(defn test-program
+  "Tests a program and fixes it so that it will halt, if it can be fixed by replacing exactly one opcode."
   [input]
+  (->> input
+       decode-program
+       vec
+       fix-program
+       )
   )
 
 (defn -main
@@ -446,6 +477,6 @@
     )
   (let [input (slurp "resources/input_8.txt")]
     (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
-    (println "8.1 Value of accumulator after fixing program: " (fix-program input))
+    (println "8.2 Value of accumulator after fixing program: " (test-program input))
     )
   )
