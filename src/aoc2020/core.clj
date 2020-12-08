@@ -367,17 +367,15 @@
   )
 
 ;; day 8
-(defn detect-infinite-loop
-  [input]
-  (let [lines (clojure.string/split-lines input)
-        instructions (map #(clojure.string/split % #" ") lines)
-        program (map #(vector (first %) (Integer/parseInt (second %))) instructions)
-        ]
-    (loop [pc 0
-           acc 0
-           seen #{}]
+(defn does-halt?
+  [program]
+  (loop [pc 0
+         acc 0
+         seen #{}]
+    (if (>= pc (count program))
+      [true acc]
       (if (contains? seen pc)
-        acc
+        [false acc]
         (let [instruction (nth program pc)
               opcode (first instruction)
               arg (second instruction)
@@ -391,6 +389,28 @@
         )
       )
     )
+  )
+
+(defn decode-program
+  [input]
+  (let [lines (clojure.string/split-lines input)
+        instructions (map #(clojure.string/split % #" ") lines)
+        program (map #(vector (first %) (Integer/parseInt (second %))) instructions)]
+    program
+    )
+  )
+
+(defn detect-infinite-loop
+  [input]
+  (->> input
+       decode-program
+       does-halt?
+       second
+       )
+  )
+
+(defn fix-program
+  [input]
   )
 
 (defn -main
@@ -426,5 +446,6 @@
     )
   (let [input (slurp "resources/input_8.txt")]
     (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
+    (println "8.1 Value of accumulator after fixing program: " (fix-program input))
     )
   )
