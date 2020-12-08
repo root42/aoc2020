@@ -366,6 +366,33 @@
     )
   )
 
+;; day 8
+(defn detect-infinite-loop
+  [input]
+  (let [lines (clojure.string/split-lines input)
+        instructions (map #(clojure.string/split % #" ") lines)
+        program (map #(vector (first %) (Integer/parseInt (second %))) instructions)
+        ]
+    (loop [pc 0
+           acc 0
+           seen #{}]
+      (if (contains? seen pc)
+        acc
+        (let [instruction (nth program pc)
+              opcode (first instruction)
+              arg (second instruction)
+              ]
+          (case opcode
+            "nop" (recur (inc pc) acc (conj seen pc))
+            "acc" (recur (inc pc) (+ acc arg) (conj seen pc))
+            "jmp" (recur (+ pc arg) acc (conj seen pc))
+            )
+          )
+        )
+      )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -396,5 +423,8 @@
   (let [input (slurp "resources/input_7.txt")]
     (println "7.1 Bags that can contain shiny gold bag: " (count-bags-that-contain input "shiny gold"))
     (println "7.2 Contents of shiny gold bag: " (contents-of-bag input "shiny gold"))
+    )
+  (let [input (slurp "resources/input_8.txt")]
+    (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
     )
   )
