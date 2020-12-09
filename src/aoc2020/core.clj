@@ -8,7 +8,7 @@
 (defn read-input
   [input-file]
   (let [input (slurp input-file)]
-    (map #(Integer. %) (clojure.string/split-lines input)))
+    (map #(read-string %) (clojure.string/split-lines input)))
   )
 
 (defn read-input-csv
@@ -445,11 +445,6 @@
   )
 
 ;; day 9
-(defn read-bigint-input
-  [input-file]
-  (let [input (slurp input-file)]
-    (map #(Long. %) (clojure.string/split-lines input)))
-  )
 
 ;; This is pretty inefficient. A better solution would be to remove and add only thos pairs that are obsolete
 ;; or new according to the rolling prefix.
@@ -535,7 +530,7 @@
     (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
     (println "8.2 Value of accumulator after fixing program: " (test-program input))
     )
-  (let [input (read-bigint-input "resources/input_9.txt")
+  (let [input (read-input "resources/input_9.txt")
         n (find-first-not-sum 25 input)]
     (println "9.1 First value that is not a sum of its 25 predecessors: " n)
     (println "9.2 Encryption weakness: " (find-sum-of-number n input))
