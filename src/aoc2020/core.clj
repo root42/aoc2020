@@ -444,6 +444,34 @@
        )
   )
 
+;; day 9
+(defn read-bigint-input
+  [input-file]
+  (let [input (slurp input-file)]
+    (map #(bigint %) (clojure.string/split-lines input)))
+  )
+
+(defn is-sum-of-pair?
+  [value coll]
+  (filter #(= (reduce + %) value) (combinations coll 2))
+  )
+
+(defn find-first-not-sum
+  [prefix input]
+  (loop [preamble (take prefix input)
+         rest (drop prefix input)]
+    (if (empty? rest)
+      nil
+      (let [current (first rest)]
+        (if (empty? (is-sum-of-pair? current preamble))
+          current
+          (recur (conj preamble current) (drop 1 rest))
+          )
+        )
+      )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -478,5 +506,8 @@
   (let [input (slurp "resources/input_8.txt")]
     (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
     (println "8.2 Value of accumulator after fixing program: " (test-program input))
+    )
+  (let [input (read-bigint-input "resources/input_9.txt")]
+    (println "9.1 First value that is not a sum of its 25 predecessors: " (find-first-not-sum 25 input))
     )
   )
