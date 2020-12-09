@@ -470,18 +470,11 @@
         (if (empty? (is-sum-of-pair? current preamble))
           current
           (recur (conj preamble current) (drop 1 rest))
-          )
-        )
-      )
-    )
-  )
+          )))))
 
-(defn find-sum-of-number
-  [q input]
-  (let [input-without-q (filter #(not= q %) input)]
-    (loop [i 0N] ; loop over whole input
-      (if (< i (count input))
-        (let [r (loop [n 1N] ; inner loop: build longer and longer sequence
+(defn test-range
+  [q i input]
+  (loop [n 1N] ; inner loop: build longer and longer sequence
                   (if (< (+ i n) (count input))
                     (let [slice (take n (drop i input))
                           sum (reduce + slice)]
@@ -494,21 +487,18 @@
                         (if (< sum q)
                           (recur (inc n)) ; did not find but might, so recur
                           nil ; did not find and not possible anymore, continue in outer loop
-                          )
-                        )
-                      )
-                    )
-                  )
-              ]
+                          ))))))
+
+(defn find-sum-of-number
+  [q input]
+  (let [input-without-q (filter #(not= q %) input)]
+    (loop [i 0N] ; loop over whole input
+      (if (< i (count input))
+        (let [r (test-range q i input)]
           (if (= nil r)
             (recur (inc i)) ; not found yet, recur
             r ; found
-            )
-          )
-        )
-      )
-    )
-  )
+            ))))))
 
 (defn -main
   "Advent of Code 2020."
