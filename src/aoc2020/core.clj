@@ -30,7 +30,7 @@
   (->>
    (combinations input n)
    (filter is2020?)
-   flatten
+   first
    (reduce *)
    )
   )
