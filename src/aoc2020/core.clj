@@ -451,15 +451,19 @@
     (map #(bigint %) (clojure.string/split-lines input)))
   )
 
+;; This is pretty inefficient. A better solution would be to remove and add only thos pairs that are obsolete
+;; or new according to the rolling prefix.
 (defn is-sum-of-pair?
+  "Returns an empty collection if value isn't a sum of any pair of numbers in coll."
   [value coll]
   (filter #(= (reduce + %) value) (combinations coll 2))
   )
 
 (defn find-first-not-sum
-  [prefix input]
-  (loop [preamble (take prefix input)
-         rest (drop prefix input)]
+  "Finds the first number in the input that is NOT the sum of a rolling prefix of size n"
+  [n input]
+  (loop [preamble (take n input)
+         rest (drop n input)]
     (if (empty? rest)
       nil
       (let [current (first rest)]
