@@ -469,7 +469,7 @@
       (let [current (first rest)]
         (if (empty? (is-sum-of-pair? current preamble))
           current
-          (recur (conj preamble current) (drop 1 rest))
+          (recur (concat (drop 1 preamble) (vector current)) (drop 1 rest))
           )))))
 
 (defn test-range
