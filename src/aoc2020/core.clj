@@ -474,20 +474,22 @@
 
 (defn test-range
   [q i input]
-  (loop [n 1N] ; inner loop: build longer and longer sequence
-                  (if (< (+ i n) (count input))
-                    (let [slice (take n (drop i input))
-                          sum (reduce + slice)]
-                      (if (= sum q)
-                        (let [sorted (sort slice )
-                              min (first sorted)
-                              max (last sorted)]
-                          (+ min max)
-                          )
-                        (if (< sum q)
-                          (recur (inc n)) ; did not find but might, so recur
-                          nil ; did not find and not possible anymore, continue in outer loop
-                          ))))))
+  (loop [n 1N
+         slice (take 1 (drop i input))
+         sum (reduce + slice)] ; inner loop: build longer and longer sequence
+    (if (< (+ i n) (count input))
+      (if (= sum q)
+        (let [sorted (sort slice )
+              min (first sorted)
+              max (last sorted)]
+          (+ min max)
+          )
+        (if (< sum q)
+          (let [k (nth input (+ i n))]
+            (recur (inc n) (concat slice (vector k)) (+ sum k)) ; did not find but might, so recur
+            )
+          nil ; did not find and not possible anymore, continue in outer loop
+          )))))
 
 (defn find-sum-of-number
   [q input]
