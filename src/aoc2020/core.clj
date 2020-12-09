@@ -464,13 +464,11 @@
   [n input]
   (loop [preamble (take n input)
          rest (drop n input)]
-    (if (empty? rest)
-      nil
-      (let [current (first rest)]
-        (if (empty? (is-sum-of-pair? current preamble))
-          current
-          (recur (concat (drop 1 preamble) (vector current)) (drop 1 rest))
-          )))))
+    (let [current (first rest)]
+      (if (empty? (is-sum-of-pair? current preamble))
+        current
+        (recur (concat (drop 1 preamble) (vector current)) (drop 1 rest))
+        ))))
 
 (defn test-range
   [q i input]
@@ -479,7 +477,7 @@
          sum (reduce + slice)] ; inner loop: build longer and longer sequence
     (if (< (+ i n) (count input))
       (if (= sum q)
-        (let [sorted (sort slice )
+        (let [sorted (sort slice)
               min (first sorted)
               max (last sorted)]
           (+ min max)
