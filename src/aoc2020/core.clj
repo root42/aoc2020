@@ -476,6 +476,40 @@
     )
   )
 
+(defn find-sum-of-number
+  [q input]
+  (let [input-without-q (filter #(not= q %) input)]
+    (loop [i 0N] ; loop over whole input
+      (if (< i (count input))
+        (let [r (loop [n 1N] ; inner loop: build longer and longer sequence
+                  (if (< (+ i n) (count input))
+                    (let [slice (take n (drop i input))
+                          sum (reduce + slice)]
+                      (if (= sum q)
+                        (let [sorted (sort slice )
+                              min (first sorted)
+                              max (last sorted)]
+                          (+ min max)
+                          )
+                        (if (< sum q)
+                          (recur (inc n)) ; did not find but might, so recur
+                          nil ; did not find and not possible anymore, continue in outer loop
+                          )
+                        )
+                      )
+                    )
+                  )
+              ]
+          (if (= nil r)
+            (recur (inc i)) ; not found yet, recur
+            r ; found
+            )
+          )
+        )
+      )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -511,7 +545,9 @@
     (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
     (println "8.2 Value of accumulator after fixing program: " (test-program input))
     )
-  (let [input (read-bigint-input "resources/input_9.txt")]
-    (println "9.1 First value that is not a sum of its 25 predecessors: " (find-first-not-sum 25 input))
+  (let [input (read-bigint-input "resources/input_9.txt")
+        n (find-first-not-sum 25 input)]
+    (println "9.1 First value that is not a sum of its 25 predecessors: " n)
+    (println "9.2 Encryption weakness: " (find-sum-of-number n input))
     )
   )
