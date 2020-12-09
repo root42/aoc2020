@@ -8,7 +8,7 @@
 (defn read-input
   [input-file]
   (let [input (slurp input-file)]
-    (map #(read-string %) (clojure.string/split-lines input)))
+    (apply vector (map #(read-string %) (clojure.string/split-lines input))))
   )
 
 (defn read-input-csv
@@ -486,14 +486,13 @@
 
 (defn find-sum-of-number
   [q input]
-  (let [input-without-q (filter #(not= q %) input)]
-    (loop [i 0] ; loop over whole input
-      (if (< i (count input))
-        (let [r (test-range q i input)]
-          (if (= nil r)
-            (recur (inc i)) ; not found yet, recur
-            r ; found
-            ))))))
+  (loop [i 0] ; loop over whole input
+    (if (< i (count input))
+      (let [r (test-range q i input)]
+        (if (= nil r)
+          (recur (inc i)) ; not found yet, recur
+          r ; found
+          )))))
 
 (defn -main
   "Advent of Code 2020."
