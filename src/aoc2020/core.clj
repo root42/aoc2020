@@ -448,7 +448,7 @@
 (defn read-bigint-input
   [input-file]
   (let [input (slurp input-file)]
-    (map #(bigint %) (clojure.string/split-lines input)))
+    (map #(Long. %) (clojure.string/split-lines input)))
   )
 
 ;; This is pretty inefficient. A better solution would be to remove and add only thos pairs that are obsolete
@@ -472,7 +472,7 @@
 
 (defn test-range
   [q i input]
-  (loop [n 1N
+  (loop [n 1
          slice (take 1 (drop i input))
          sum (reduce + slice)] ; inner loop: build longer and longer sequence
     (if (< (+ i n) (count input))
@@ -492,7 +492,7 @@
 (defn find-sum-of-number
   [q input]
   (let [input-without-q (filter #(not= q %) input)]
-    (loop [i 0N] ; loop over whole input
+    (loop [i 0] ; loop over whole input
       (if (< i (count input))
         (let [r (test-range q i input)]
           (if (= nil r)
