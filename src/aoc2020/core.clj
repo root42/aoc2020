@@ -494,6 +494,30 @@
           r ; found
           )))))
 
+;; day 10
+(defn differences
+  [input]
+  (loop [v (take 2 input)
+         coll input
+         diffs []]
+    (if (= (count coll) 1)
+      diffs
+      (recur (take 2 (drop 1 coll)) (drop 1 coll) (conj diffs (- (second v) (first v)))))
+    )
+  )
+
+(defn product-of-jolt-differences
+  [i j input]
+  (let [result (->> input
+                    sort
+                    (into [0])
+                    differences
+                    frequencies)]
+    (println result)
+    (* (get result i) (inc (get result j)))
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -533,5 +557,8 @@
         n (find-first-not-sum 25 input)]
     (println "9.1 First value that is not a sum of its 25 predecessors: " n)
     (println "9.2 Encryption weakness: " (find-sum-of-number n input))
+    )
+  (let [input (read-input "resources/input_10.txt")]
+    (println "10.1 : " (product-of-jolt-differences 1 3 input))
     )
   )
