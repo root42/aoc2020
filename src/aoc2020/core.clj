@@ -1,6 +1,7 @@
 (ns aoc2020.core
   (:gen-class)
-  (:require [instaparse.core :as insta]))
+  (:require [instaparse.core :as insta])
+  (:require [clojure.set :refer [difference union intersection]]))
 
 (use 'clojure.math.combinatorics)
 (use 'clojure.set)
@@ -517,47 +518,129 @@
     )
   )
 
+;; day 10.2
+
+;; the kahn sort is taken from EPL licensed gist here: https://gist.github.com/alandipert/1263783
+(defn without
+  "Returns set s with x removed."
+  [s x] (difference s #{x}))
+
+(defn take-1
+  "Returns the pair [element, s'] where s' is set s with element removed."
+  [s] {:pre [(not (empty? s))]}
+  (let [item (first s)]
+    [item (without s item)]))
+
+(defn no-incoming
+  "Returns the set of nodes in graph g for which there are no incoming
+  edges, where g is a map of nodes to sets of nodes."
+  [g]
+  (let [nodes (set (keys g))
+        have-incoming (apply union (vals g))]
+    (difference nodes have-incoming)))
+
+(defn normalize
+  "Returns g with empty outgoing edges added for nodes with incoming
+  edges only.  Example: {:a #{:b}} => {:a #{:b}, :b #{}}"
+  [g]
+  (let [have-incoming (apply union (vals g))]
+    (reduce #(if (get % %2) % (assoc % %2 #{})) g have-incoming)))
+
+(defn kahn-sort
+  "Proposes a topological sort for directed graph g using Kahn's
+   algorithm, where g is a map of nodes to sets of nodes. If g is
+   cyclic, returns nil."
+  ([g]
+     (kahn-sort (normalize g) [] (no-incoming g)))
+  ([g l s]
+     (if (empty? s)
+       (when (every? empty? (vals g)) l)
+       (let [[n s'] (take-1 s)
+             m (g n)
+             g' (reduce #(update-in % [n] without %2) g m)]
+         (recur g' (conj l n) (union s' (intersection (no-incoming g') m)))))))
+
+(defn create-adapter-dag
+  [input]
+  (let [sorted (->> input
+                    sort
+                    (into [0]))
+        builtin (+ 3 (reduce max sorted))
+        all-adapters (conj sorted builtin)]
+    (loop [dag {}
+           coll all-adapters
+           current-adapter (first all-adapters)]
+      (if (empty? coll)
+        dag
+        (let [edges (->> coll
+                         (map #{(+ 1 current-adapter) (+ 3 current-adapter)})
+                         (filter #(not= nil %))
+                         set)]
+          (recur (into dag {current-adapter (set edges)}) (drop 1 coll) (first coll))
+          )
+        )
+      )
+    )
+  )
+
+(defn number-of-paths
+  [input]
+  (let [s (->> input
+               create-adapter-dag
+               kahn-sort ; the kahn-sort is not needed, since the input is so benign a standard sort is enough 
+               )
+        destination (last s)]
+    (loop [dp {destination 1}
+           i (dec (count s))]
+      (loop [j 0]
+        
+        )
+      )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
-  (let [input (read-input "resources/input_1.txt")]
-    (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
-    (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
-    )
-  (let [input (read-password-input "resources/input_2.txt")]
-    (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
-    (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
-    )
-  (let [input (read-text-input "resources/input_3.txt")]
-    (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
-    (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
-    )
-  (let [input (read-passport-input "resources/input_4.txt")]
-    (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
-    (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
-    )
-  (let [input (read-text-input "resources/input_5.txt")]
-    (println "5.1 Highest seat ID: " (highest-seat-id input))
-    (println "5.2 My seat ID: " (my-seat-id input))
-    )
-  (let [input (read-text-block-input "resources/input_6.txt")]
-    (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
-    (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
-    )
-  (let [input (slurp "resources/input_7.txt")]
-    (println "7.1 Bags that can contain shiny gold bag: " (count-bags-that-contain input "shiny gold"))
-    (println "7.2 Contents of shiny gold bag: " (contents-of-bag input "shiny gold"))
-    )
-  (let [input (slurp "resources/input_8.txt")]
-    (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
-    (println "8.2 Value of accumulator after fixing program: " (test-program input))
-    )
-  (let [input (read-input "resources/input_9.txt")
-        n (find-first-not-sum 25 input)]
-    (println "9.1 First value that is not a sum of its 25 predecessors: " n)
-    (println "9.2 Encryption weakness: " (find-sum-of-number n input))
-    )
+  ;; (let [input (read-input "resources/input_1.txt")]
+  ;;   (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
+  ;;   (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
+  ;;   )
+  ;; (let [input (read-password-input "resources/input_2.txt")]
+  ;;   (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
+  ;;   (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
+  ;;   )
+  ;; (let [input (read-text-input "resources/input_3.txt")]
+  ;;   (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
+  ;;   (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
+  ;;   )
+  ;; (let [input (read-passport-input "resources/input_4.txt")]
+  ;;   (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
+  ;;   (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
+  ;;   )
+  ;; (let [input (read-text-input "resources/input_5.txt")]
+  ;;   (println "5.1 Highest seat ID: " (highest-seat-id input))
+  ;;   (println "5.2 My seat ID: " (my-seat-id input))
+  ;;   )
+  ;; (let [input (read-text-block-input "resources/input_6.txt")]
+  ;;   (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
+  ;;   (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
+  ;;   )
+  ;; (let [input (slurp "resources/input_7.txt")]
+  ;;   (println "7.1 Bags that can contain shiny gold bag: " (count-bags-that-contain input "shiny gold"))
+  ;;   (println "7.2 Contents of shiny gold bag: " (contents-of-bag input "shiny gold"))
+  ;;   )
+  ;; (let [input (slurp "resources/input_8.txt")]
+  ;;   (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
+  ;;   (println "8.2 Value of accumulator after fixing program: " (test-program input))
+  ;;   )
+  ;; (let [input (read-input "resources/input_9.txt")
+  ;;       n (find-first-not-sum 25 input)]
+  ;;   (println "9.1 First value that is not a sum of its 25 predecessors: " n)
+  ;;   (println "9.2 Encryption weakness: " (find-sum-of-number n input))
+  ;;   )
   (let [input (read-input "resources/input_10.txt")]
-    (println "10.1 : " (product-of-jolt-differences 1 3 input))
+    (println "10.1 Product of number of joltage differences (1,3): " (product-of-jolt-differences 1 3 input))
+    (println "10.2 Number of ways to connect the adapters: " (number-of-paths input))
     )
   )
