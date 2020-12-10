@@ -513,7 +513,6 @@
                     (into [0])
                     differences
                     frequencies)]
-    (println result)
     (* (get result i) (inc (get result j)))
     )
   )
