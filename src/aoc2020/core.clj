@@ -519,48 +519,8 @@
   )
 
 ;; day 10.2
-
-;; the kahn sort is taken from EPL licensed gist here: https://gist.github.com/alandipert/1263783
-(defn without
-  "Returns set s with x removed."
-  [s x] (difference s #{x}))
-
-(defn take-1
-  "Returns the pair [element, s'] where s' is set s with element removed."
-  [s] {:pre [(not (empty? s))]}
-  (let [item (first s)]
-    [item (without s item)]))
-
-(defn no-incoming
-  "Returns the set of nodes in graph g for which there are no incoming
-  edges, where g is a map of nodes to sets of nodes."
-  [g]
-  (let [nodes (set (keys g))
-        have-incoming (apply union (vals g))]
-    (difference nodes have-incoming)))
-
-(defn normalize
-  "Returns g with empty outgoing edges added for nodes with incoming
-  edges only.  Example: {:a #{:b}} => {:a #{:b}, :b #{}}"
-  [g]
-  (let [have-incoming (apply union (vals g))]
-    (reduce #(if (get % %2) % (assoc % %2 #{})) g have-incoming)))
-
-(defn kahn-sort
-  "Proposes a topological sort for directed graph g using Kahn's
-   algorithm, where g is a map of nodes to sets of nodes. If g is
-   cyclic, returns nil."
-  ([g]
-     (kahn-sort (normalize g) [] (no-incoming g)))
-  ([g l s]
-     (if (empty? s)
-       (when (every? empty? (vals g)) l)
-       (let [[n s'] (take-1 s)
-             m (g n)
-             g' (reduce #(update-in % [n] without %2) g m)]
-         (recur g' (conj l n) (union s' (intersection (no-incoming g') m)))))))
-
 (defn create-adapter-dag
+  "Creates the DAG for the given input of adapters with max of 3 Jolts between adapters"
   [input]
   (let [sorted (->> input
                     sort
@@ -573,10 +533,12 @@
       (if (empty? coll)
         dag
         (let [edges (->> coll
-                         (map #{(+ 1 current-adapter) (+ 3 current-adapter)})
+                         (map #{(+ 1 current-adapter) (+ 2 current-adapter) (+ 3 current-adapter)})
                          (filter #(not= nil %))
-                         set)]
-          (recur (into dag {current-adapter (set edges)}) (drop 1 coll) (first coll))
+                         set ; probably not necessary on this input, but makes it more safe
+                         vec
+                         sort)]
+          (recur (into dag {current-adapter edges}) (drop 1 coll) (first coll))
           )
         )
       )
@@ -584,16 +546,27 @@
   )
 
 (defn number-of-paths
+  "Calculates number of possible paths in a DAG with Dynamic Programming"
   [input]
-  (let [s (->> input
-               create-adapter-dag
-               kahn-sort ; the kahn-sort is not needed, since the input is so benign a standard sort is enough 
-               )
+  (let [dag (create-adapter-dag input)
+        s (sort (keys dag))
         destination (last s)]
     (loop [dp {destination 1}
            i (dec (count s))]
-      (loop [j 0]
-        
+      (if (>= i 0)
+        (let [si (nth s i)
+              dpsi (loop [vsi (dag si)
+                          dpsi (if (nil? (dp si)) 0 (dp si))]
+                     (if (empty? vsi)
+                       dpsi
+                       (let [vsij (first vsi)
+                             dpvsij (if (nil? (dp vsij)) 0 (dp vsij))]
+                         (recur (drop 1 vsi) (+ dpsi dpvsij)))
+                       )
+                     )]
+          (recur (assoc dp si dpsi) (dec i))
+          )
+        (dp 0) ; This is our result
         )
       )
     )
