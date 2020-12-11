@@ -631,7 +631,7 @@
                          )
                        )
            ]
-       (recur (inc i) (+ changes chg) (concat newstate (vector col)))
+       (recur (inc i) (+ changes chg) (vec (concat newstate (vector col))))
        )
      )
    )
