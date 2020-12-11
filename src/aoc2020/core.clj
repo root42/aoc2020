@@ -572,6 +572,29 @@
     )
   )
 
+;; day 11
+
+(update-state
+ [state]
+ (loop)
+ )
+
+(defn seats-occupied
+  [input]
+  (loop [state input]
+    (let [[newstate changed] (update-state state)]
+      (if (= 0 changed)
+        (->> newstate
+             (apply str)
+             (filter #(= \# %))
+             count
+             )
+        (recur newstate)
+        )
+      )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -615,5 +638,8 @@
   (let [input (read-input "resources/input_10.txt")]
     (println "10.1 Product of number of joltage differences (1,3): " (product-of-jolt-differences 1 3 input))
     (println "10.2 Number of ways to connect the adapters: " (number-of-paths input))
+    )
+  (let [input (read-text-input "resources/input_11.txt")]
+    (println "10.1 Seats occupied: " (seats-occupied input))
     )
   )
