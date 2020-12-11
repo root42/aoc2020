@@ -574,13 +574,9 @@
 ;; day 11
 (defn get-cell
   [i j state]
-  (cond
-    (< i 0) nil
-    (< j 0) nil
-    (>= i (count state)) nil
-    (>= j (count (nth state i))) nil
-    :else (nth (nth state i) j)
-    )
+  (let [row (get state i)]
+    (if (nil? row) nil)
+    (get row j))
   )
 
 (defn get-neighbors
