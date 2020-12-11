@@ -1,6 +1,5 @@
 (ns aoc2020.core
   (:gen-class)
-  (:require [instaparse.core :as insta])
   (:require [clojure.set :refer [difference union intersection]]))
 
 (use 'clojure.math.combinatorics)
@@ -349,7 +348,7 @@
        )
      a
      b)
-      
+
     )
   )
 
@@ -573,17 +572,77 @@
   )
 
 ;; day 11
+(defn get-cell
+  [i j state]
+  (cond
+    (< i 0) nil
+    (< j 0) nil
+    (>= i (count state)) nil
+    (>= j (count (nth state i))) nil
+    :else (nth (nth state i) j)
+    )
+  )
 
-(update-state
+(defn get-neighbors
+  [i j state]
+  (let [nbs [(get-cell (dec i) (dec j) state)
+             (get-cell (dec i)      j  state)
+             (get-cell (dec i) (inc j) state)
+             (get-cell      i  (dec j) state)
+             (get-cell      i  (inc j) state)
+             (get-cell (inc i) (dec j) state)
+             (get-cell (inc i)      j  state)
+             (get-cell (inc i) (inc j) state)
+             ]]
+    (->> nbs
+         (filter #(= % \#))
+         count
+         )
+    )
+  )
+
+(defn update-state
  [state]
- (loop)
+ (loop [i 0
+        changes 0
+        newstate []]
+   (if (>= i (count state))
+     [changes newstate]
+     (let [row (nth state i)
+           [chg col] (loop [j 0
+                            changes 0
+                            newcolumn []]
+                       (if (< j (count row))
+                         (let [neighbors (get-neighbors i j state)
+                               oldcell (get-cell i j state)
+                               cell (cond
+                                      (and (= oldcell \L) (= neighbors 0)) \#
+                                      (and (= oldcell \#) (>= neighbors 4)) \L
+                                      :else oldcell
+                                      )]
+
+                           (recur (inc j)
+                                  (if (not= cell oldcell)
+                                    (inc changes)
+                                    changes)
+                                  (conj newcolumn cell))
+                           )
+                         [changes newcolumn]
+                         )
+                       )
+           ]
+       (recur (inc i) chg (concat newstate (vector col)))
+       )
+     )
+   )
  )
 
 (defn seats-occupied
   [input]
   (loop [state input]
-    (let [[newstate changed] (update-state state)]
-      (if (= 0 changed)
+    (let [[changes newstate] (update-state state)]
+      (println (map str newstate))
+      (if (= 0 changes)
         (->> newstate
              (apply str)
              (filter #(= \# %))
@@ -598,47 +657,47 @@
 (defn -main
   "Advent of Code 2020."
   [& args]
-  (let [input (read-input "resources/input_1.txt")]
-    (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
-    (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
-    )
-  (let [input (read-password-input "resources/input_2.txt")]
-    (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
-    (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
-    )
-  (let [input (read-text-input "resources/input_3.txt")]
-    (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
-    (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
-    )
-  (let [input (read-passport-input "resources/input_4.txt")]
-    (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
-    (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
-    )
-  (let [input (read-text-input "resources/input_5.txt")]
-    (println "5.1 Highest seat ID: " (highest-seat-id input))
-    (println "5.2 My seat ID: " (my-seat-id input))
-    )
-  (let [input (read-text-block-input "resources/input_6.txt")]
-    (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
-    (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
-    )
-  (let [input (slurp "resources/input_7.txt")]
-    (println "7.1 Bags that can contain shiny gold bag: " (count-bags-that-contain input "shiny gold"))
-    (println "7.2 Contents of shiny gold bag: " (contents-of-bag input "shiny gold"))
-    )
-  (let [input (slurp "resources/input_8.txt")]
-    (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
-    (println "8.2 Value of accumulator after fixing program: " (test-program input))
-    )
-  (let [input (read-input "resources/input_9.txt")
-        n (find-first-not-sum 25 input)]
-    (println "9.1 First value that is not a sum of its 25 predecessors: " n)
-    (println "9.2 Encryption weakness: " (find-sum-of-number n input))
-    )
-  (let [input (read-input "resources/input_10.txt")]
-    (println "10.1 Product of number of joltage differences (1,3): " (product-of-jolt-differences 1 3 input))
-    (println "10.2 Number of ways to connect the adapters: " (number-of-paths input))
-    )
+  ;; (let [input (read-input "resources/input_1.txt")]
+  ;;   (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
+  ;;   (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
+  ;;   )
+  ;; (let [input (read-password-input "resources/input_2.txt")]
+  ;;   (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
+  ;;   (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
+  ;;   )
+  ;; (let [input (read-text-input "resources/input_3.txt")]
+  ;;   (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
+  ;;   (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
+  ;;   )
+  ;; (let [input (read-passport-input "resources/input_4.txt")]
+  ;;   (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
+  ;;   (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
+  ;;   )
+  ;; (let [input (read-text-input "resources/input_5.txt")]
+  ;;   (println "5.1 Highest seat ID: " (highest-seat-id input))
+  ;;   (println "5.2 My seat ID: " (my-seat-id input))
+  ;;   )
+  ;; (let [input (read-text-block-input "resources/input_6.txt")]
+  ;;   (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
+  ;;   (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
+  ;;   )
+  ;; (let [input (slurp "resources/input_7.txt")]
+  ;;   (println "7.1 Bags that can contain shiny gold bag: " (count-bags-that-contain input "shiny gold"))
+  ;;   (println "7.2 Contents of shiny gold bag: " (contents-of-bag input "shiny gold"))
+  ;;   )
+  ;; (let [input (slurp "resources/input_8.txt")]
+  ;;   (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
+  ;;   (println "8.2 Value of accumulator after fixing program: " (test-program input))
+  ;;   )
+  ;; (let [input (read-input "resources/input_9.txt")
+  ;;       n (find-first-not-sum 25 input)]
+  ;;   (println "9.1 First value that is not a sum of its 25 predecessors: " n)
+  ;;   (println "9.2 Encryption weakness: " (find-sum-of-number n input))
+  ;;   )
+  ;; (let [input (read-input "resources/input_10.txt")]
+  ;;   (println "10.1 Product of number of joltage differences (1,3): " (product-of-jolt-differences 1 3 input))
+  ;;   (println "10.2 Number of ways to connect the adapters: " (number-of-paths input))
+  ;;   )
   (let [input (read-text-input "resources/input_11.txt")]
     (println "10.1 Seats occupied: " (seats-occupied input))
     )
