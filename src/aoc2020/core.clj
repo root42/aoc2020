@@ -575,7 +575,6 @@
 (defn get-cell
   [i j state]
   (let [row (get state i)]
-    (if (nil? row) nil)
     (get row j))
   )
 
