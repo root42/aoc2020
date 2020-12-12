@@ -579,8 +579,8 @@
     (get row j))
   )
 
-(defn get-neighbors
-  [i j state]
+(defn get-direct-neighbors
+  [[i j] state]
   (let [nbs [(get-cell (dec i) (dec j) state)
              (get-cell (dec i)      j  state)
              (get-cell (dec i) (inc j) state)
@@ -597,8 +597,38 @@
     )
   )
 
+(defn ray-cast
+  [[ox oy] [dx dy] state]
+  (loop [[px py] [(+ ox dx) (+ oy dy)]]
+    (let [seat (get-cell px py state)]
+      (if (not= seat \.)
+        seat
+        (recur [(+ px dx) (+ py dy)])
+        )
+      )    
+    )
+  )
+
+(defn get-line-of-sight-neighbors
+  [origin state]
+  (let [nbs [(ray-cast origin [-1  1] state)
+             (ray-cast origin [ 0  1] state)
+             (ray-cast origin [ 1  1] state)
+             (ray-cast origin [-1  0] state)
+             (ray-cast origin [ 1  0] state)
+             (ray-cast origin [-1 -1] state)
+             (ray-cast origin [ 0 -1] state)
+             (ray-cast origin [ 1 -1] state)
+             ]]
+    (->> nbs
+         (filter #(= % \#))
+         count
+         )
+    )
+  )
+
 (defn update-state
- [state]
+ [state get-neighbors max-neighbors]
  (loop [i 0
         changes 0
         newstate []]
@@ -609,11 +639,11 @@
                             chgcol 0
                             newcolumn []]
                        (if (< j (count row))
-                         (let [neighbors (get-neighbors i j state)
+                         (let [neighbors (get-neighbors [i j] state)
                                oldcell (get-cell i j state)
                                cell (cond
                                       (and (= oldcell \L) (= neighbors 0)) \#
-                                      (and (= oldcell \#) (>= neighbors 4)) \L
+                                      (and (= oldcell \#) (>= neighbors max-neighbors)) \L
                                       :else oldcell
                                       )]
 
@@ -634,10 +664,10 @@
  )
 
 (defn seats-occupied
-  [input]
+  [input get-neighbors max-neighbors]
   (println)
   (loop [state input]
-    (let [[changes newstate] (update-state state)]
+    (let [[changes newstate] (update-state state get-neighbors max-neighbors)]
       (print ".") (flush)
       (if (= 0 changes)
         (->> newstate
@@ -696,6 +726,7 @@
     (println "10.2 Number of ways to connect the adapters: " (number-of-paths input))
     )
   (let [input (read-text-input "resources/input_11.txt")]
-    (println "11.1 Seats occupied: " (seats-occupied input))
+    (println "11.1 Seats occupied: " (seats-occupied input get-direct-neighbors 4))
+    (println "11.2 Seats occupied: " (seats-occupied input get-line-of-sight-neighbors 5))
     )
   )
