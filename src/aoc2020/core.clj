@@ -775,6 +775,42 @@
     )
   )
 
+;; day 13
+(defn index-of [e coll] (first (keep-indexed #(if (= e %2) %1) coll)))
+
+(defn read-bus-input
+  [input]
+  (let [lines (clojure.string/split-lines (slurp input))
+        earliest (Integer/parseInt (first lines))
+        buses (->> lines
+                   second
+                   (re-seq #"[^,]+")
+                   (filter #(not= "x" %))
+                   (map #(Integer/parseInt %))
+                   )
+        ]
+    [earliest buses]
+    )
+  )
+
+(defn get-bus-wait
+  [t l]
+  (if (= 0 (rem t l))
+    0
+    (- (* (inc (quot t l)) l) t)
+    )
+  )
+
+(defn earliest-bus
+  [[earliest buses]]
+  (let [waits (map #(get-bus-wait earliest %) buses)
+        wait (reduce min waits)
+        bus (nth buses (index-of wait waits))
+        ]
+    (* wait bus)
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -826,5 +862,8 @@
   (let [input (read-nav-input "resources/input_12.txt")]
     (println "12.1 Manhattan distance of navigation: " (manhattan [0 0] (navigate-ship input)))
     (println "12.1 Manhattan distance of navigation with waypoint: " (manhattan [0 0] (navigate-ship-waypoint input)))
+    )
+  (let [input (read-bus-input "resources/input_13.txt")]
+    (println "13.1 Earliest bus times waiting time in minutes: " (earliest-bus input))
     )
   )
