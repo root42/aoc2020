@@ -701,24 +701,26 @@
   )
 
 (defn rotate
-  [dir steps]
-  (let [angles [[1 0] [0 -1] [-1 0] [0 1]]
-        cur (.indexOf angles dir)]
-    (nth angles (mod (+ cur steps) 4))
+  [[dx dy] steps]
+  (case (mod steps 360)
+    0   [dx dy]
+    90  [(-' dy) dx]
+    180 [(-' dx) (-' dy)]
+    270 [dy (-' dx)]
     )
   )
 
 (defn rotate-left
   [dir angle]
-  (rotate dir (- (/ angle 90)))
+  (rotate dir angle)
   )
 
 (defn rotate-right
   [dir angle]
-  (rotate dir (/ angle 90))
+  (rotate dir (- 360 angle))
   )
 
-(defn process-nav-data
+(defn navigate-ship
   [input]
   (loop [navdata input
          pos [0 0]
@@ -745,55 +747,84 @@
     )
   )
 
+(defn navigate-ship-waypoint
+  [input]
+  (loop [navdata input
+         pos [0 0]
+         wp [10 1]
+         ]
+    (if (empty? navdata)
+      pos
+      (let [nav (first navdata)
+            action (first nav)
+            distance (second nav)]
+        (case action
+          "N" (recur (drop 1 navdata) pos [(first wp)              (+ (second wp) distance)    ])
+          "E" (recur (drop 1 navdata) pos [(+ (first wp) distance) (second wp)                 ])
+          "S" (recur (drop 1 navdata) pos [(first wp)              (- (second wp) distance)    ])
+          "W" (recur (drop 1 navdata) pos [(- (first wp) distance) (second wp)                 ])
+          "F" (recur (drop 1 navdata)
+                     [(+ (first pos) (* distance (first wp)))
+                      (+ (second pos) (* distance (second wp)))]
+                     wp)
+          "L" (recur (drop 1 navdata) pos (rotate-left wp distance))
+          "R" (recur (drop 1 navdata) pos (rotate-right wp distance))
+          )
+        )
+      )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
-  ;; (let [input (read-input "resources/input_1.txt")]
-  ;;   (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
-  ;;   (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
-  ;;   )
-  ;; (let [input (read-password-input "resources/input_2.txt")]
-  ;;   (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
-  ;;   (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
-  ;;   )
-  ;; (let [input (read-text-input "resources/input_3.txt")]
-  ;;   (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
-  ;;   (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
-  ;;   )
-  ;; (let [input (read-passport-input "resources/input_4.txt")]
-  ;;   (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
-  ;;   (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
-  ;;   )
-  ;; (let [input (read-text-input "resources/input_5.txt")]
-  ;;   (println "5.1 Highest seat ID: " (highest-seat-id input))
-  ;;   (println "5.2 My seat ID: " (my-seat-id input))
-  ;;   )
-  ;; (let [input (read-text-block-input "resources/input_6.txt")]
-  ;;   (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
-  ;;   (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
-  ;;   )
-  ;; (let [input (slurp "resources/input_7.txt")]
-  ;;   (println "7.1 Bags that can contain shiny gold bag: " (count-bags-that-contain input "shiny gold"))
-  ;;   (println "7.2 Contents of shiny gold bag: " (contents-of-bag input "shiny gold"))
-  ;;   )
-  ;; (let [input (slurp "resources/input_8.txt")]
-  ;;   (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
-  ;;   (println "8.2 Value of accumulator after fixing program: " (test-program input))
-  ;;   )
-  ;; (let [input (read-input "resources/input_9.txt")
-  ;;       n (find-first-not-sum 25 input)]
-  ;;   (println "9.1 First value that is not a sum of its 25 predecessors: " n)
-  ;;   (println "9.2 Encryption weakness: " (find-sum-of-number n input))
-  ;;   )
-  ;; (let [input (read-input "resources/input_10.txt")]
-  ;;   (println "10.1 Product of number of joltage differences (1,3): " (product-of-jolt-differences 1 3 input))
-  ;;   (println "10.2 Number of ways to connect the adapters: " (number-of-paths input))
-  ;;   )
-  ;; (let [input (read-text-input "resources/input_11.txt")]
-  ;;   (println "11.1 Seats occupied: " (seats-occupied input get-direct-neighbors 4))
-  ;;   (println "11.2 Seats occupied: " (seats-occupied input get-line-of-sight-neighbors 5))
-  ;;   )
+  (let [input (read-input "resources/input_1.txt")]
+    (println "1.1 Given X + Y = 2020 we have X * Y =" (calc-two-product input) )
+    (println "1.2 Given X + Y + Z = 2020 we have X * Y * Z =" (calc-three-product input) )
+    )
+  (let [input (read-password-input "resources/input_2.txt")]
+    (println "2.1 Number of valid passwords: " (count-valid-passwords input is-valid-password?))
+    (println "2.2 Number of valid passwords: " (count-valid-passwords input is-toboggan-password?))
+    )
+  (let [input (read-text-input "resources/input_3.txt")]
+    (println "3.1 Toboggan trajectory, number of trees: " (count-trees input [3 1]))
+    (println "3.2 Toboggan trajectory, product: " (product-count-trees input '([1 1] [3 1] [5 1] [7 1] [1 2])))
+    )
+  (let [input (read-passport-input "resources/input_4.txt")]
+    (println "4.1 Number of valid passports: " (count-valid-passports input is-valid-passport?))
+    (println "4.2 Number of valid passports: " (count-valid-passports input is-valid-passport-ranges?))
+    )
+  (let [input (read-text-input "resources/input_5.txt")]
+    (println "5.1 Highest seat ID: " (highest-seat-id input))
+    (println "5.2 My seat ID: " (my-seat-id input))
+    )
+  (let [input (read-text-block-input "resources/input_6.txt")]
+    (println "6.1 Sum of groups where anyone answers: " (sum-of-anyone-answers input))
+    (println "6.2 Sum of groups where everyone answers: " (sum-of-everyone-answers input))
+    )
+  (let [input (slurp "resources/input_7.txt")]
+    (println "7.1 Bags that can contain shiny gold bag: " (count-bags-that-contain input "shiny gold"))
+    (println "7.2 Contents of shiny gold bag: " (contents-of-bag input "shiny gold"))
+    )
+  (let [input (slurp "resources/input_8.txt")]
+    (println "8.1 Value of accumulator before infinite loop: " (detect-infinite-loop input))
+    (println "8.2 Value of accumulator after fixing program: " (test-program input))
+    )
+  (let [input (read-input "resources/input_9.txt")
+        n (find-first-not-sum 25 input)]
+    (println "9.1 First value that is not a sum of its 25 predecessors: " n)
+    (println "9.2 Encryption weakness: " (find-sum-of-number n input))
+    )
+  (let [input (read-input "resources/input_10.txt")]
+    (println "10.1 Product of number of joltage differences (1,3): " (product-of-jolt-differences 1 3 input))
+    (println "10.2 Number of ways to connect the adapters: " (number-of-paths input))
+    )
+  (let [input (read-text-input "resources/input_11.txt")]
+    (println "11.1 Seats occupied: " (seats-occupied input get-direct-neighbors 4))
+    (println "11.2 Seats occupied: " (seats-occupied input get-line-of-sight-neighbors 5))
+    )
   (let [input (read-nav-input "resources/input_12.txt")]
-    (println "12.1 Manhattan distance of navigation: " (manhattan [0 0] (process-nav-data input)))
+    (println "12.1 Manhattan distance of navigation: " (manhattan [0 0] (navigate-ship input)))
+    (println "12.1 Manhattan distance of navigation with waypoint: " (manhattan [0 0] (navigate-ship-waypoint input)))
     )
   )
