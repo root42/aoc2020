@@ -348,7 +348,6 @@
        )
      a
      b)
-
     )
   )
 
@@ -645,7 +644,6 @@
                                       (and (= oldcell \#) (>= neighbors max-neighbors)) \L
                                       :else oldcell
                                       )]
-
                            (recur (inc j)
                                   (if (not= cell oldcell)
                                     (inc chgcol)
@@ -678,6 +676,32 @@
         )
       )
     )
+  )
+
+;; day 12
+(defn abs
+  [n]
+  (max n (-' n)))
+
+(defn manhattan
+  [[x1 y1] [x2 y2]]
+  (+ (abs (- x2 x1)) (abs (- y2 y1))))
+
+(defn read-nav-input
+  [input]
+  (let [lines (slurp input)]
+    (->> lines
+         clojure.string/split-lines
+         (map #(re-seq #"([NSEWLRF])([0-9]+)" %))
+         (map #(first %))
+         (map #(drop 1 %))
+         (map #(vector (first %) (Integer/parseInt (second %))))
+         )
+    )
+  )
+
+(defn process-nav-data
+  []
   )
 
 (defn -main
@@ -727,5 +751,8 @@
   (let [input (read-text-input "resources/input_11.txt")]
     (println "11.1 Seats occupied: " (seats-occupied input get-direct-neighbors 4))
     (println "11.2 Seats occupied: " (seats-occupied input get-line-of-sight-neighbors 5))
+    )
+  (let [input (read-nav-input "resources/input_12.txt")]
+    (println "12.1 Seats occupied: " (manhattan [0 0] (process-nav-data input)))
     )
   )
