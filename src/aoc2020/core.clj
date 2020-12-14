@@ -871,6 +871,13 @@
   )
 
 ;; day 14
+(defn calc-bit-mask
+  [s]
+  {:or  (Long/parseLong (clojure.string/replace s #"X" "0") 2) 
+   :and (Long/parseLong (clojure.string/replace s #"X" "1") 2)
+   :s s}
+  )
+
 (defn parse-bit-line
   [line]
   (let [tokens (first (re-seq #"(mask|mem)[\[]?([0-9]+)?[\]]? = ([0-9X]+)" line))
@@ -878,7 +885,7 @@
         arg1 (nth tokens 2)
         arg2 (nth tokens 3)]
     (case opcode
-      "mask" {:opcode "mask" :val arg2}
+      "mask" {:opcode "mask" :mask (calc-bit-mask arg2)}
       "mem" {:opcode "mem" :addr (Integer/parseInt arg1) :val (Long/parseLong arg2) }
       )
     )
@@ -891,12 +898,6 @@
        clojure.string/split-lines
        (map parse-bit-line)
        )
-  )
-
-(defn calc-bit-mask
-  [s]
-  {:or  (Long/parseLong (clojure.string/replace s #"X" "0") 2) 
-   :and (Long/parseLong (clojure.string/replace s #"X" "1") 2) }
   )
 
 (defn apply-bit-mask
@@ -914,8 +915,85 @@
       (let [instruction (first rest)
             opcode (:opcode instruction)]
         (case opcode
-          "mask" (recur (drop 1 rest) (calc-bit-mask (:val instruction)) mem)
+          "mask" (recur (drop 1 rest) (:mask instruction) mem)
           "mem" (recur (drop 1 rest) mask (assoc mem (:addr instruction) (apply-bit-mask mask (:val instruction))))
+          )
+        )
+      )
+    )
+  )
+
+(defn prepend-bit
+  [i bit addrs]
+  (let [f (fn [a] (case bit
+                    0 (bit-clear a i)
+                    1 (bit-set a i)))]
+    (vec (map f addrs))
+    )
+  )
+
+(defn generate-addrs
+  [i addrs]
+  (loop [rest addrs
+         new []]
+    (if (empty? rest)
+      new
+      (let [cur (first rest)]
+        (recur (drop 1 rest) (vec (concat new (prepend-bit i 1 [cur]) (prepend-bit i 0 [cur]))))
+        )
+      )
+    )
+  )
+
+(defn bit-get
+  [x n]
+  (case (bit-test x n)
+    false 0
+    true 1))
+
+(defn calc-mad-masks
+  [mask addr]
+  (loop [rest (:s mask)
+         addrs [addr]
+         i (dec (count rest))]
+    (if (empty? rest)
+      addrs
+      (let [cur (first rest)]
+        (case cur
+          \X (recur (drop 1 rest) (generate-addrs i addrs) (dec i))
+          \0 (recur (drop 1 rest) (prepend-bit i (bit-get addr i) addrs) (dec i))
+          \1 (recur (drop 1 rest) (prepend-bit i 1 addrs) (dec i))
+          )
+        )
+      )
+    )
+  )
+
+(defn apply-mad-mask
+  [_mask _mem addr val]
+  (let [masks (calc-mad-masks _mask addr)]
+    (loop [rest masks
+           mem _mem]
+      (if (empty? rest)
+        mem
+        (recur (drop 1 rest) (assoc mem (first rest) val))
+        )
+      )
+    )
+  )
+
+(defn run-mad-program
+  [program]
+  (loop [rest program
+         mask {:or 0 :and 1 :s "000000000000000000000000000000000000"}
+         mem {}]
+    (if (empty? rest)
+      mem
+      (let [instruction (first rest)
+            opcode (:opcode instruction)]
+        (case opcode
+          "mask" (recur (drop 1 rest) (:mask instruction) mem)
+          "mem" (recur (drop 1 rest) mask (apply-mad-mask mask mem (:addr instruction) (:val instruction)))
           )
         )
       )
@@ -982,5 +1060,6 @@
     )
   (let [program (read-bit-program "resources/input_14.txt")]
     (println "14.1 Sum of all values in memory: " (reduce + (vals (run-bit-program program))))
+    (println "14.2 Sum of all values in memory: " (reduce + (vals (run-mad-program program))))
     )
   )
