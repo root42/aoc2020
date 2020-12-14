@@ -870,6 +870,58 @@
     )
   )
 
+;; day 14
+(defn parse-bit-line
+  [line]
+  (let [tokens (first (re-seq #"(mask|mem)[\[]?([0-9]+)?[\]]? = ([0-9X]+)" line))
+        opcode (nth tokens 1)
+        arg1 (nth tokens 2)
+        arg2 (nth tokens 3)]
+    (case opcode
+      "mask" {:opcode "mask" :val arg2}
+      "mem" {:opcode "mem" :addr (Integer/parseInt arg1) :val (Long/parseLong arg2) }
+      )
+    )
+  )
+
+(defn read-bit-program
+  [input]
+  (->> input
+       slurp
+       clojure.string/split-lines
+       (map parse-bit-line)
+       )
+  )
+
+(defn calc-bit-mask
+  [s]
+  {:or  (Long/parseLong (clojure.string/replace s #"X" "0") 2) 
+   :and (Long/parseLong (clojure.string/replace s #"X" "1") 2) }
+  )
+
+(defn apply-bit-mask
+  [mask val]
+  (bit-and (bit-or val (:or mask)) (:and mask))
+  )
+
+(defn run-bit-program
+  [program]
+  (loop [rest program
+         mask {:or 0 :and 1}
+         mem {}]
+    (if (empty? rest)
+      mem
+      (let [instruction (first rest)
+            opcode (:opcode instruction)]
+        (case opcode
+          "mask" (recur (drop 1 rest) (calc-bit-mask (:val instruction)) mem)
+          "mem" (recur (drop 1 rest) mask (assoc mem (:addr instruction) (apply-bit-mask mask (:val instruction))))
+          )
+        )
+      )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -927,5 +979,8 @@
     )
   (let [[n a] (read-crt-input "resources/input_13.txt")]
     (println "13.2 Earliest time when all buses leave staggered: " (chinese-remainder n a))
+    )
+  (let [program (read-bit-program "resources/input_14.txt")]
+    (println "14.1 Sum of all values in memory: " (reduce + (vals (run-bit-program program))))
     )
   )
