@@ -1005,24 +1005,24 @@
   [seq n]
     (loop [idx 2
            rest seq
-           mem (vec (repeat n 0))]
+           mem (transient (vec (repeat n 0)))]
       (if (empty? rest)
-        mem
-        (recur (inc idx) (drop 1 rest) (assoc mem (first rest) idx))
+        (persistent! mem)
+        (recur (inc idx) (drop 1 rest) (assoc! mem (first rest) idx))
         )
       )
   )
 
 (defn memory-game
   [n start]
-  (loop [mem-by-value (insert-by-value start n)
+  (loop [mem-by-value (transient (insert-by-value start n))
          i (inc (count start))
          next (last start)]
     (let [k (nth mem-by-value next)
           age (if (= 0 k) 0 (- i k))]
       (if (= i n)
         age
-        (recur (assoc mem-by-value next i) (inc i) age)
+        (recur (assoc! mem-by-value next i) (inc i) age)
         )
       )
     )
