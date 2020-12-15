@@ -1001,25 +1001,28 @@
   )
 
 ;; day 15
-(defn get-next-number
-  [mem]
-  (let [n (first mem)
-        age (index-of n (drop 1 mem))]
-    (if (nil? age)
-      0
-      (inc age)
+(defn insert-by-value
+  [seq n]
+    (loop [idx 2
+           rest seq
+           mem (vec (repeat n 0))]
+      (if (empty? rest)
+        mem
+        (recur (inc idx) (drop 1 rest) (assoc mem (first rest) idx))
+        )
       )
-    )
   )
 
 (defn memory-game
-  [start]
-  (loop [mem (reverse start)
-         i (inc (count start))]
-    (let [next (get-next-number mem)]
-      (if (= i 2020)
-        next
-        (recur (cons next mem) (inc i))
+  [n start]
+  (loop [mem-by-value (insert-by-value start n)
+         i (inc (count start))
+         next (last start)]
+    (let [k (nth mem-by-value next)
+          age (if (= 0 k) 0 (- i k))]
+      (if (= i n)
+        age
+        (recur (assoc mem-by-value next i) (inc i) age)
         )
       )
     )
@@ -1088,6 +1091,7 @@
     (println "14.2 Sum of all values in memory: " (reduce + (vals (run-mad-program program))))
     )
   (let [input '(1,2,16,19,18,0)]
-    (println "15.1 2020th spoken number for input" input (memory-game input))
+    (println "15.1 2020th spoken number for input: " input (memory-game 2020 input))
+    (println "15.2 30000000th spoken number for input: " input (memory-game 30000000 input))
     )
   )
