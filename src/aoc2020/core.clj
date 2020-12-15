@@ -1000,6 +1000,31 @@
     )
   )
 
+;; day 15
+(defn get-next-number
+  [mem]
+  (let [n (first mem)
+        age (index-of n (drop 1 mem))]
+    (if (nil? age)
+      0
+      (inc age)
+      )
+    )
+  )
+
+(defn memory-game
+  [start]
+  (loop [mem (reverse start)
+         i (inc (count start))]
+    (let [next (get-next-number mem)]
+      (if (= i 2020)
+        next
+        (recur (cons next mem) (inc i))
+        )
+      )
+    )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -1061,5 +1086,8 @@
   (let [program (read-bit-program "resources/input_14.txt")]
     (println "14.1 Sum of all values in memory: " (reduce + (vals (run-bit-program program))))
     (println "14.2 Sum of all values in memory: " (reduce + (vals (run-mad-program program))))
+    )
+  (let [input '(1,2,16,19,18,0)]
+    (println "15.1 2020th spoken number for input" input (memory-game input))
     )
   )
