@@ -1028,6 +1028,78 @@
     )
   )
 
+;; day 16
+(defn parse-validations
+  [input]
+  (let [f (fn [line]
+            (let [tokens (first (re-seq #"([a-z_]+): ([0-9]+)-([0-9]+) or ([0-9]+)-([0-9]+)" line))
+                    field (nth tokens 1)
+                    min1 (Integer/parseInt (nth tokens 2))
+                    max1 (Integer/parseInt (nth tokens 3))
+                    min2 (Integer/parseInt (nth tokens 4))
+                    max2 (Integer/parseInt (nth tokens 5))]
+                [(keyword field) (hash-map :min1 min1 :max1 max1 :min2 min2 :max2 max2)]))]
+    (->> input
+         (map #(clojure.string/replace-first % #"([a-z]+) ([a-z]+):" "$1_$2:"))
+         (filter #(> (count %) 0))
+         (map f)
+         (into {})
+         )
+    )
+  )
+
+(defn parse-ticket
+  [input]
+  (->>
+   (clojure.string/split input #",")
+   (map #(Integer/parseInt %))
+   vec
+   )
+  )
+
+(defn read-ticket-data
+  [input]
+  (let [lines (slurp input)
+        blocks (clojure.string/split lines #"\n\n")
+        validations (parse-validations (clojure.string/split-lines (nth blocks 0)))
+        my-ticket (parse-ticket (second (clojure.string/split-lines (nth blocks 1))))
+        nearby-tickets (map parse-ticket (drop 1 (clojure.string/split-lines (nth blocks 2))))]
+    [validations my-ticket nearby-tickets]
+    )
+  )
+
+(defn test-props
+  [val props]
+  (loop [rest (keys props)
+         valid false]
+    (if (or (empty? rest) valid)
+      valid
+      (let [p (get props (first rest))
+            min1 (get p :min1)
+            max1 (get p :max1)
+            min2 (get p :min2)
+            max2 (get p :max2)
+            v (or (and (>= val min1) (<= val max1)) (and (>= val min2) (<= val max2)))]
+        (recur (drop 1 rest) v)
+        )
+      )
+    )
+  )
+
+(defn validate-ticket
+  [ticket props]
+  (filter #(not (test-props % props)) ticket)
+  )
+
+(defn ticket-scanning-error-rate
+  [props myticket nearby-tickets]
+  (->> nearby-tickets 
+       (map #(validate-ticket % props))
+       flatten
+       (reduce +)
+       )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -1093,5 +1165,8 @@
   (let [input '(1,2,16,19,18,0)]
     (println "15.1 2020th spoken number for input: " input (memory-game 2020 input))
     (println "15.2 30000000th spoken number for input: " input (memory-game 30000000 input))
+    )
+  (let [[props myticket nearby-tickets] (read-ticket-data "resources/input_16.txt")]
+    (println "16.1 Ticket scanning error rate: " (ticket-scanning-error-rate props myticket nearby-tickets))
     )
   )
