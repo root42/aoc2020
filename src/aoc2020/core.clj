@@ -52,7 +52,7 @@
 (defn parse-password-line
   [str]
   (let
-      [p (first (re-seq #"^([0-9]+)-([0-9]+) ([a-z]): ([a-z]+)" str))]
+      [p (first (re-seq #"^(\d+)-(\d+) ([a-z]): ([a-z]+)" str))]
     (vector (Integer. (nth p 1))
             (Integer. (nth p 2))
             (first (nth p 3))
@@ -178,7 +178,7 @@
              )
            )
          (some #{ecl} ecls)
-         (re-matches #"[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" pid)
+         (re-matches #"\d\d\d\d\d\d\d\d\d" pid)
          )
     )
   )
@@ -663,7 +663,6 @@
 
 (defn seats-occupied
   [input get-neighbors max-neighbors]
-  (println)
   (loop [state input]
     (let [[changes newstate] (update-state state get-neighbors max-neighbors)]
       (print ".") (flush)
@@ -693,7 +692,7 @@
   (let [lines (slurp input)]
     (->> lines
          clojure.string/split-lines
-         (map #(re-seq #"([NSEWLRF])([0-9]+)" %))
+         (map #(re-seq #"([NSEWLRF])(\d+)" %))
          (map #(first %))
          (map #(drop 1 %))
          (map #(vector (first %) (Integer/parseInt (second %))))
@@ -880,7 +879,7 @@
 
 (defn parse-bit-line
   [line]
-  (let [tokens (first (re-seq #"(mask|mem)[\[]?([0-9]+)?[\]]? = ([0-9X]+)" line))
+  (let [tokens (first (re-seq #"(mask|mem)[\[]?(\d+)?[\]]? = ([0-9X]+)" line))
         opcode (nth tokens 1)
         arg1 (nth tokens 2)
         arg2 (nth tokens 3)]
@@ -1032,7 +1031,7 @@
 (defn parse-validations
   [input]
   (let [f (fn [line]
-            (let [tokens (first (re-seq #"([a-z_]+): ([0-9]+)-([0-9]+) or ([0-9]+)-([0-9]+)" line))
+            (let [tokens (first (re-seq #"([a-z_]+): (\d+)-(\d+) or (\d+)-(\d+)" line))
                     field (nth tokens 1)
                     min1 (Integer/parseInt (nth tokens 2))
                     max1 (Integer/parseInt (nth tokens 3))
@@ -1068,13 +1067,13 @@
     )
   )
 
-(defn test-props
-  [val props]
-  (loop [rest (keys props)
+(defn test-rules
+  [val rules]
+  (loop [rest (keys rules)
          valid false]
     (if (or (empty? rest) valid)
       valid
-      (let [p (get props (first rest))
+      (let [p (get rules (first rest))
             min1 (get p :min1)
             max1 (get p :max1)
             min2 (get p :min2)
@@ -1087,17 +1086,114 @@
   )
 
 (defn validate-ticket
-  [ticket props]
-  (filter #(not (test-props % props)) ticket)
+  [ticket rules]
+  (filter #(not (test-rules % rules)) ticket)
   )
 
 (defn ticket-scanning-error-rate
-  [props myticket nearby-tickets]
+  [rules nearby-tickets]
   (->> nearby-tickets 
-       (map #(validate-ticket % props))
+       (map #(validate-ticket % rules))
        flatten
        (reduce +)
        )
+  )
+
+(defn get-valid-tickets
+  [rules tickets]
+  (let [valid-ticket? (fn [t] (empty? (validate-ticket t rules)))]
+    (filter valid-ticket? tickets)
+    )
+  )
+
+(defn apply-rule
+  [rule ticket]
+  (let [min1 (get rule :min1)
+        max1 (get rule :max1)
+        min2 (get rule :min2)
+        max2 (get rule :max2)
+        f (fn [val] (or (and (>= val min1) (<= val max1)) (and (>= val min2) (<= val max2))))]
+    (map f ticket)
+    )
+  )
+
+(defn combine-result
+  [v1 v2]
+  (map #(and (first %) (second %)) (map vector v1 v2))
+  )
+
+(defn test-rule
+  [rule tickets]
+  (->> tickets
+       (map #(apply-rule rule %))
+       (reduce combine-result)
+       )
+  )
+
+(defn apply-rules-to-tickets
+  [rules tickets]
+  (loop [field-names (keys rules)
+         fields (sorted-map)]
+    (if (empty? field-names)
+      fields
+      (let [field (first field-names)
+            result (test-rule (get rules field) tickets)]
+        (recur (drop 1 field-names) (assoc fields (count (filter true? result)) [field result]))
+        )
+      )
+    )
+  )
+
+(defn update-column
+  [column rule-results]
+  (loop [rest rule-results
+         new-results (sorted-map)]
+    (if (empty? rest)
+      new-results
+      (let [key (first (first rest))
+            val (second (first rest))
+            field (first val)
+            columns (vec (second val))
+            new-columns (assoc columns column false)]
+        (recur (dissoc rest key) (assoc new-results key [field new-columns]))
+        )
+      )
+    )
+  )
+
+(defn determine-field-names
+  [tickets rules]
+  (let [rule-results (apply-rules-to-tickets rules tickets)]
+    (loop [rest rule-results
+           field-numbers {}]
+      (if (empty? rest)
+        field-numbers
+        (let [unique (first rest)
+              unique-key (first unique)
+              cur (second unique)
+              cur-key (first cur)
+              cur-rule (second cur)
+              column (.indexOf cur-rule true)
+              new-rest (dissoc rest unique-key)]
+          (recur (update-column column new-rest) (assoc field-numbers cur-key column))
+          )
+        )
+      )
+    )
+  )
+
+(defn get-departure-product
+  [rules myticket tickets]
+  (let [valid-tickets (get-valid-tickets rules tickets)
+        field-names (determine-field-names valid-tickets rules)
+        departures [:departure_location :departure_station :departure_platform :departure_track
+                    :departure_date :departure_time]]
+    (->> departures
+         (map field-names)
+         (map #(nth myticket %))
+         (reduce *)
+         )
+    )
   )
 
 (defn -main
@@ -1166,7 +1262,8 @@
     (println "15.1 2020th spoken number for input: " input (memory-game 2020 input))
     (println "15.2 30000000th spoken number for input: " input (memory-game 30000000 input))
     )
-  (let [[props myticket nearby-tickets] (read-ticket-data "resources/input_16.txt")]
-    (println "16.1 Ticket scanning error rate: " (ticket-scanning-error-rate props myticket nearby-tickets))
+  (let [[rules myticket nearby-tickets] (read-ticket-data "resources/input_16.txt")]
+    (println "16.1 Ticket scanning error rate: " (ticket-scanning-error-rate rules nearby-tickets))
+    (println "16.2 Product of my ticket's depature fields: " (get-departure-product rules myticket nearby-tickets))
     )
   )
