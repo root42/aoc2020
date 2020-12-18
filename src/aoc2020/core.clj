@@ -2,6 +2,7 @@
   (:gen-class)
   (:require [clojure.set :refer [difference union intersection]])
   (:require [clojure.math.numeric-tower :as math])
+  (:require [instaparse.core :as insta])
   )
 
 (use 'clojure.math.combinatorics)
@@ -1285,6 +1286,47 @@
        )
   )
 
+;; day 18
+(def expr-parser
+  (insta/parser
+   "S = Expression
+    <Expression> = Digit | Paren | Addition | Multiplication
+    Addition = Expression <'+'> ( Digit | Paren )
+    Multiplication = Expression <'*'> ( Digit | Paren )
+    <Paren> = <'('> Expression <')'>
+    Digit = #'[0-9]'"
+   :auto-whitespace :standard
+   )
+  )
+
+(defn to-sexp
+  [expr]
+  (case expr
+    :S identity
+    :Digit read-string
+    :Addition +
+    :Multiplication *
+    )
+  )
+
+(defn parse-expression-line
+  [line]
+  (->> line
+       expr-parser
+       (insta/transform to-sexp)
+       )
+  )
+
+(defn read-and-evaluate-number-input
+  [input]
+  (->> input
+       slurp
+       clojure.string/split-lines
+       (map parse-expression-line)
+       (reduce +)
+       )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -1358,5 +1400,8 @@
   (let [input (read-text-input "resources/input_17.txt")]
     (println "17.1 Active cell count after 6 cycles in 3D: " (boot-count input 3 6))
     (println "17.2 Active cell count after 6 cycles in 4D: " (boot-count input 4 6))
+    )
+  (let [input "resources/input_18.txt"]
+    (println "18.1 Sum of all expressions: " (read-and-evaluate-number-input input))
     )
   )
