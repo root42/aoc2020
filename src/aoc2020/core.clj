@@ -1,7 +1,8 @@
 (ns aoc2020.core
   (:gen-class)
   (:require [clojure.set :refer [difference union intersection]])
-  (:require [clojure.math.numeric-tower :as math]))
+  (:require [clojure.math.numeric-tower :as math])
+  )
 
 (use 'clojure.math.combinatorics)
 (use 'clojure.set)
@@ -1196,6 +1197,94 @@
     )
   )
 
+;; day 17
+(defn surrounding-space
+  [[head & tail]]
+  (let [heads (map #(+ head %) '(-1 0 1))]
+    (if (empty? tail)
+      (map list heads)
+      (mapcat (fn [t] (map #(cons % t) heads)) (surrounding-space tail))
+      )
+    )
+  )
+
+(defn neighbours
+  [cell]
+  (->> cell
+       surrounding-space
+       (filter #(not= cell %))
+       set
+       )
+  )
+
+(defn search-space
+  [cells]
+  (->> cells
+       (map surrounding-space)
+       (reduce clojure.set/union)
+       set
+   )
+)
+
+(defn rule
+  [cells cell]
+  (let [n-count (count (clojure.set/intersection cells (neighbours cell)))]
+    (if (contains? cells cell)
+      (or (= n-count 2) (= n-count 3))
+      (= n-count 3)
+      )
+    )
+  )
+
+(defn next-state
+  [cells]
+  (->> cells
+       search-space
+       (filter #(rule cells %))
+       set
+       )
+)
+
+(defn steps [cells]
+  (->> cells
+       next-state
+       steps
+       (cons cells)
+       lazy-seq
+       )
+)
+
+(defn parse-input
+  [lines]
+  (->> (for [y (range 0 (count lines))
+             x (range 0 (count (first lines)))]
+         (list (nth (nth lines y) x) x y))
+       (filter #(= \# (first %)))
+       (map rest)
+       set
+       )
+  )
+
+(defn stretch-dimensions
+  [N cells]
+  (->> cells
+       (map #(concat % (repeat (- N 2) 0)))
+       set
+       )
+  )
+
+(defn boot-count
+  [input n k]
+  (->> input
+       parse-input
+       (stretch-dimensions n)
+       steps
+       (drop k)
+       first
+       count
+       )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -1265,5 +1354,9 @@
   (let [[rules myticket nearby-tickets] (read-ticket-data "resources/input_16.txt")]
     (println "16.1 Ticket scanning error rate: " (ticket-scanning-error-rate rules nearby-tickets))
     (println "16.2 Product of my ticket's depature fields: " (get-departure-product rules myticket nearby-tickets))
+    )
+  (let [input (read-text-input "resources/input_17.txt")]
+    (println "17.1 Active cell count after 6 cycles in 3D: " (boot-count input 3 6))
+    (println "17.2 Active cell count after 6 cycles in 4D: " (boot-count input 4 6))
     )
   )
