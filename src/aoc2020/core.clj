@@ -1197,7 +1197,7 @@
     )
   )
 
-;; day 17
+;; day 17 - taken from https://github.com/elektronaut/advent-of-code/blob/main/day17/day17.clj
 (defn surrounding-space
   [[head & tail]]
   (let [heads (map #(+ head %) '(-1 0 1))]
