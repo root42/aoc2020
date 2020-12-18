@@ -1287,7 +1287,7 @@
   )
 
 ;; day 18
-(def expr-parser
+(def expr-parser1
   (insta/parser
    "S = Expression
     <Expression> = Digit | Paren | Addition | Multiplication
@@ -1309,20 +1309,13 @@
     )
   )
 
-(defn parse-expression-line
-  [line]
-  (->> line
-       expr-parser
-       (insta/transform to-sexp)
-       )
-  )
-
 (defn read-and-evaluate-number-input
-  [input]
+  [input expr-parser]
   (->> input
        slurp
        clojure.string/split-lines
-       (map parse-expression-line)
+       (map expr-parser)
+       (map #(insta/transform to-sexp %))
        (reduce +)
        )
   )
@@ -1402,6 +1395,6 @@
     (println "17.2 Active cell count after 6 cycles in 4D: " (boot-count input 4 6))
     )
   (let [input "resources/input_18.txt"]
-    (println "18.1 Sum of all expressions: " (read-and-evaluate-number-input input))
+    (println "18.1 Sum of all expressions: " (read-and-evaluate-number-input input expr-parser1))
     )
   )
