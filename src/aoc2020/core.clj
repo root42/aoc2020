@@ -1299,6 +1299,19 @@
    )
   )
 
+(def expr-parser2
+  (insta/parser
+   "S = AddExpression | MulExpression
+    <AddExpression> = Digit | Paren | Addition
+    Addition = AddExpression <'+'> ( Digit | Paren )
+    <MulExpression> = AddExpression | Multiplication
+    Multiplication = MulExpression <'*'> AddExpression
+    <Paren> = <'('> MulExpression <')'>
+    Digit = #'[0-9]'"
+   :auto-whitespace :standard
+   )
+  )
+
 (defn to-sexp
   [expr]
   (case expr
@@ -1396,5 +1409,6 @@
     )
   (let [input "resources/input_18.txt"]
     (println "18.1 Sum of all expressions: " (read-and-evaluate-number-input input expr-parser1))
+    (println "18.2 Sum of all expressions: " (read-and-evaluate-number-input input expr-parser2))
     )
   )
