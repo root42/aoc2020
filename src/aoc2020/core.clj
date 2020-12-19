@@ -1299,6 +1299,7 @@
    )
   )
 
+;; Compare this for operator precedence: https://stackoverflow.com/questions/25185645/describing-operator-precedence-using-ebnf
 (def expr-parser2
   (insta/parser
    "S = AddExpression | MulExpression
