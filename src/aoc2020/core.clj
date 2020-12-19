@@ -1302,12 +1302,12 @@
 ;; Compare this for operator precedence: https://stackoverflow.com/questions/25185645/describing-operator-precedence-using-ebnf
 (def expr-parser2
   (insta/parser
-   "S = AddExpression | MulExpression
-    <AddExpression> = Digit | Paren | Addition
-    Addition = AddExpression <'+'> ( Digit | Paren )
-    <MulExpression> = AddExpression | Multiplication
-    Multiplication = MulExpression <'*'> AddExpression
-    <Paren> = <'('> MulExpression <')'>
+   "S = Expression | Multiplication
+    <Expression> = Digit | Paren | Addition
+    Addition = Expression <'+'> ( Digit | Paren )
+    <Factor> = Expression | Multiplication
+    Multiplication = Factor <'*'> Expression
+    <Paren> = <'('> Factor <')'>
     Digit = #'[0-9]'"
    :auto-whitespace :standard
    )
