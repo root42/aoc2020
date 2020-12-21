@@ -1337,7 +1337,7 @@
 ;; day 19
 (defn create-parser
   [input]
-  (insta/parser input)
+  (insta/parser input :start :0)
   )
 
 (defn count-parsed-expressions
