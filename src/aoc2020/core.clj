@@ -1334,6 +1334,22 @@
        )
   )
 
+;; day 19
+(defn create-parser
+  [input]
+  (insta/parser input)
+  )
+
+(defn count-parsed-expressions
+  [parser input]
+  (->> input
+       clojure.string/split-lines
+       (map parser)
+       (filter #(not (insta/failure? %)))
+       count
+       )
+  )
+
 (defn -main
   "Advent of Code 2020."
   [& args]
@@ -1411,5 +1427,9 @@
   (let [input "resources/input_18.txt"]
     (println "18.1 Sum of all expressions: " (read-and-evaluate-number-input input expr-parser1))
     (println "18.2 Sum of all expressions: " (read-and-evaluate-number-input input expr-parser2))
+    )
+  (let [input (read-text-block-input "resources/input_19.txt")
+        parser (create-parser (first input))]
+    (println "19.1 Number of valid expressions: " (count-parsed-expressions parser (second input)))
     )
   )
