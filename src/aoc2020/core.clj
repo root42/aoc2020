@@ -1432,4 +1432,8 @@
         parser (create-parser (first input))]
     (println "19.1 Number of valid expressions: " (count-parsed-expressions parser (second input)))
     )
+  (let [input (read-text-block-input "resources/input_19_2.txt")
+        parser (create-parser (first input))]
+    (println "19.2 Number of valid expressions: " (count-parsed-expressions parser (second input)))
+    )
   )
